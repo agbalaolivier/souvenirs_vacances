@@ -26,7 +26,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tableau stockant les images courantes (en Base64)
     let currentImages = [];
 
-    // --- FONCTIONS ET UTILITAIRES ---
+    // --- FONCTION MAGIQUE : COMPRESSION DES IMAGES POUR L'URL ---
+    function compressImage(base64Str, maxWidth = 500, quality = 0.5) {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = base64Str;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+        });
+    }
 
     // Fonction pour ouvrir la photo en HD
     function openLightbox(imageSrc) {
@@ -36,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (btnDownloadSingleImg) {
                 btnDownloadSingleImg.href = imageSrc;
-                btnDownloadSingleImg.download = `photo-souvenir-${Date.now()}.png`;
+                btnDownloadSingleImg.download = `photo-souvenir-${Date.now()}.jpg`;
             }
         }
     }
@@ -69,8 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (dataParam) {
             try {
-                const decodedData = JSON.parse(decodeURIComponent(escape(atob(dataParam))));
-                
+                const jsonString = decodeURIComponent(atob(dataParam));
+                const decodedData = JSON.parse(jsonString);
+
                 if (decodedData.title && outTitle) outTitle.innerText = decodedData.title;
                 if (decodedData.subtitle && outSubtitle) outSubtitle.innerText = decodedData.subtitle;
                 if (decodedData.message && outMessage) outMessage.innerText = decodedData.message;
@@ -87,19 +110,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ÉVÉNEMENTS SUR LA LIGHTBOX ---
 
-    // Clic sur le bouton fermer (X)
     if (closeModal && imageModal) {
         closeModal.addEventListener('click', () => imageModal.style.display = 'none');
     }
 
-    // Clic directement sur l'image agrandie = fermeture (miniaturisation)
     if (imgFull && imageModal) {
         imgFull.addEventListener('click', () => {
             imageModal.style.display = 'none';
         });
     }
 
-    // Clic à l'extérieur du contenu = fermeture
     if (imageModal) {
         imageModal.addEventListener('click', (e) => {
             if (e.target === imageModal) {
@@ -113,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.innerText = e.target.value || 'Sous-titre');
     if (inMessage) inMessage.addEventListener('input', e => outMessage.innerText = e.target.value || 'Votre message...');
 
-    // --- CHARGEMENT DES PHOTOS DEPUIS LE FORMULAIRE ---
+    // --- CHARGEMENT DES PHOTOS DEPUIS LE FORMULAIRE (AVEC COMPRESSION) ---
     if (inMedia) {
         inMedia.addEventListener('change', e => {
             const files = Array.from(e.target.files);
@@ -128,8 +148,10 @@ document.addEventListener('DOMContentLoaded', () => {
             files.forEach(file => {
                 if (file.type.startsWith('image/')) {
                     const reader = new FileReader();
-                    reader.onload = ev => {
-                        currentImages.push(ev.target.result);
+                    reader.onload = async (ev) => {
+                        // Compression à la volée
+                        const compressed = await compressImage(ev.target.result, 600, 0.6);
+                        currentImages.push(compressed);
                         loadedCount++;
 
                         if (loadedCount === files.length) {
@@ -142,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 5. TÉLÉCHARGER LE FLYER RESUMÉ (PNG) ---
+    // --- TÉLÉCHARGER LE FLYER RESUMÉ (PNG) ---
     if (btnDownload) {
         btnDownload.addEventListener('click', () => {
             html2canvas(flyerCard, { scale: 2 }).then(canvas => {
@@ -154,10 +176,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- 6. PARTAGER : IMAGE + LIEN DYNAMIQUE PORTANT LES PHOTOS ---
+    // --- PARTAGER : IMAGE + LIEN DYNAMIQUE ---
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
-            // Création de l'objet contenant la carte
             const cardData = {
                 title: outTitle ? outTitle.innerText : '',
                 subtitle: outSubtitle ? outSubtitle.innerText : '',
@@ -165,17 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 images: currentImages
             };
 
-            // Encodage sécurisé des données dans l'URL
             let shareableUrl = APP_LINK;
             try {
                 const jsonString = JSON.stringify(cardData);
-                const encodedData = btoa(unescape(encodeURIComponent(jsonString)));
+                const encodedData = btoa(encodeURIComponent(jsonString));
                 shareableUrl = `${APP_LINK}?card=${encodedData}`;
             } catch (e) {
-                console.warn("L'ensemble des images est trop volumineux pour l'URL, partage standard.", e);
+                console.warn("Erreur d'encodage :", e);
             }
 
-            // Génération de l'image de synthèse (flyer)
             const canvas = await html2canvas(flyerCard, { scale: 2 });
             canvas.toBlob(async (blob) => {
                 const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
