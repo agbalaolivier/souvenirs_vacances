@@ -20,51 +20,6 @@
     padding: 0; 
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
 }
-/* --- EN-TÊTE DE LA CARTE --- */
-.flyer-header {
-    background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
-    padding: 30px 65px 20px 20px !important; /* Marge interne à droite réservée pour le logo */
-    text-align: left;
-    color: #ffffff;
-    position: relative !important; /* Indispensable pour fixer le logo à l'intérieur */
-    min-height: 80px;
-}
-
-.flyer-title {
-    margin: 0 0 8px 0;
-    font-size: 1.4rem;
-    font-weight: 800;
-    line-height: 1.2;
-    word-break: break-word;
-}
-
-/* LOGO FIXE : Il ne bougera JAMAIS, même si le texte est effacé */
-.title-logo-fixed {
-    position: absolute !important;
-    top: 15px !important;
-    right: 15px !important;
-    width: 45px !important;
-    height: 45px !important;
-    object-fit: contain;
-    display: block;
-}
-
-.flyer-header p {
-    font-size: 0.85rem;
-    color: #e0f2fe;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(8px);
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-}
-/* Style du logo dans le bandeau de bas de page */
-.promo-logo {
-    width: 40px;  /* Taille agrandie pour le footer */
-    height: 40px;
-    object-fit: contain;
-}
 
 body {
     background-color: var(--bg-dark);
@@ -244,7 +199,7 @@ body {
 }
 
 /* ==========================================
-   4. CARTE / FLYER SOUVENIR (PREVIEW)
+   4. CARTE / FLYER SOUVENIR (PREVIEW) - NET & PRO
    ========================================== */
 .preview-area {
     display: flex;
@@ -255,74 +210,87 @@ body {
 
 .flyer-card {
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     background: #ffffff;
-    border-radius: 32px;
+    border-radius: 28px;
     overflow: hidden;
-    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     color: #0f172a;
     display: flex;
     flex-direction: column;
     position: relative;
+    border: 1px solid var(--card-border);
 }
 
+/* --- EN-TÊTE CENTRÉ ET ÉLÉGANT --- */
 .flyer-header {
     background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
-    padding: 36px 28px 28px 28px;
-    text-align: center;
+    padding: 24px 20px 20px 20px !important;
+    text-align: center !important;
     color: #ffffff;
-    position: relative;
+    position: relative !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-.flyer-header h3 {
-    font-size: 1.6rem;
+/* Titre principal centré */
+.flyer-header h3,
+.flyer-title {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem !important;
     font-weight: 800;
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
     line-height: 1.2;
+    text-align: center;
+    width: 100%;
+    padding-right: 25px;
 }
 
+/* Badge / Sous-titre parfaitement centré */
 .flyer-header p {
-    font-size: 0.85rem;
+    font-size: 0.8rem !important;
     color: #e0f2fe;
     font-weight: 600;
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(8px);
-    display: inline-block;
-    padding: 6px 16px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 18px;
     border-radius: 20px;
+    margin: 0 auto !important;
+    text-align: center;
 }
 
-/* Galerie d'images dans la carte */
+/* Logo discret calé en haut à droite */
+.title-logo-fixed {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    width: 28px !important;
+    height: 28px !important;
+    object-fit: contain;
+    display: block;
+}
+
+/* --- ZONE PHOTOS GRAND FORMAT --- */
 .media-gallery {
-    padding: 20px;
+    padding: 12px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-    min-height: 160px;
-    max-height: 300px;
+    gap: 10px;
+    min-height: 230px;
+    max-height: 380px;
     overflow-y: auto;
     background: #f8fafc;
-}
-
-.media-item {
     width: 100%;
-    height: 130px;
-    object-fit: cover;
-    border-radius: 18px;
-    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.media-item:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
+/* Grand rectangle pointillé quand il n'y a pas encore de photo */
 .placeholder-box {
     grid-column: 1 / -1;
-    height: 140px;
+    height: 220px;
     border: 2px dashed #cbd5e1;
     border-radius: 20px;
     display: flex;
@@ -330,22 +298,41 @@ body {
     justify-content: center;
     color: #94a3b8;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    background: #ffffff;
+    width: 100%;
+}
+
+/* Photos chargées */
+.media-item {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.media-item:hover {
+    transform: scale(1.02);
+}
+
+/* --- PIED DE CARTE (MESSAGE & ESPACEMENT) --- */
+.flyer-body {
+    padding: 32px 24px 28px 24px;
+    text-align: center;
+    flex-grow: 1;
     background: #ffffff;
 }
 
-.flyer-body {
-    padding: 24px;
-    text-align: center;
-    flex-grow: 1;
-}
-
 .flyer-message {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: #334155;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #1e293b;
+    font-weight: 700;
+    margin: 0;
     white-space: pre-line;
-    font-weight: 500;
 }
 
 /* ==========================================
@@ -381,7 +368,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     object-fit: contain;
-    cursor: pointer; /* Un clic sur la photo agrandie la ferme */
+    cursor: pointer;
     animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -416,6 +403,7 @@ body {
 .close-modal:hover {
     opacity: 1;
 }
+
 /* --- LIGHTBOX STYLE WHATSAPP --- */
 .whatsapp-lightbox {
     display: none;
@@ -484,14 +472,6 @@ body {
     padding: 10px;
 }
 
-.modal-content {
-    max-width: 95%;
-    max-height: 90vh;
-    object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
-}
-
 /* Flèches de navigation */
 .nav-btn {
     position: absolute;
@@ -553,6 +533,12 @@ body {
     justify-content: center;
 }
 
+.promo-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
 .promo-text strong {
     display: block;
     font-size: 0.85rem;
@@ -571,6 +557,7 @@ body {
     color: #fcd34d;
     font-weight: 700;
 }
+
 /* --- BANNIÈRE D'INSTRUCTION SUR LA CARTE --- */
 .card-footer-cta {
     margin-top: 20px;
