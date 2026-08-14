@@ -177,46 +177,49 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- PARTAGER : IMAGE + LIEN DYNAMIQUE ---
-    if (btnShare) {
-        btnShare.addEventListener('click', async () => {
-            const cardData = {
-                title: outTitle ? outTitle.innerText : '',
-                subtitle: outSubtitle ? outSubtitle.innerText : '',
-                message: outMessage ? outMessage.innerText : '',
-                images: currentImages
-            };
+    // --- 6. PARTAGER : IMAGE + LIEN DYNAMIQUE ---
+if (btnShare) {
+    btnShare.addEventListener('click', async () => {
+        const cardData = {
+            title: outTitle ? outTitle.innerText : '',
+            subtitle: outSubtitle ? outSubtitle.innerText : '',
+            message: outMessage ? outMessage.innerText : '',
+            images: currentImages
+        };
 
-            let shareableUrl = APP_LINK;
-            try {
-                const jsonString = JSON.stringify(cardData);
-                const encodedData = btoa(encodeURIComponent(jsonString));
-                shareableUrl = `${APP_LINK}?card=${encodedData}`;
-            } catch (e) {
-                console.warn("Erreur d'encodage :", e);
-            }
+        let shareableUrl = APP_LINK;
+        try {
+            const jsonString = JSON.stringify(cardData);
+            const encodedData = btoa(encodeURIComponent(jsonString));
+            shareableUrl = `${APP_LINK}?card=${encodedData}`;
+        } catch (e) {
+            console.warn("Erreur d'encodage :", e);
+        }
 
-            const canvas = await html2canvas(flyerCard, { scale: 2 });
-            canvas.toBlob(async (blob) => {
-                const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
-                const shareText = `À peine rentrés et vous me manquez déjà ! 🌴✨\n\nRetrouve notre carte et les photos HD ici :\n${shareableUrl}`;
+        const canvas = await html2canvas(flyerCard, { scale: 2 });
+        canvas.toBlob(async (blob) => {
+            const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
+            
+            // Le texte qui partira sur WhatsApp
+            const shareText = `À peine rentrés et vous me manquez déjà ! 🌴✨\n\nRegarde la carte de nos vacances ici :\n${shareableUrl}`;
 
-                if (navigator.share && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            title: 'Mes Souvenirs de Vacances',
-                            text: shareText,
-                            files: [file]
-                        });
-                    } catch (err) {
-                        console.log('Partage annulé');
-                    }
-                } else {
-                    navigator.clipboard.writeText(shareText);
-                    alert('Lien de la carte copié dans le presse-papier !');
+            if (navigator.share && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'Mes Souvenirs de Vacances',
+                        text: shareText,
+                        files: [file]
+                    });
+                } catch (err) {
+                    console.log('Partage annulé');
                 }
-            });
+            } else {
+                await navigator.clipboard.writeText(shareText);
+                alert('Lien de la carte copié dans le presse-papier !');
+            }
         });
-    }
+    });
+}
 
     // Chargement automatique si l'URL contient des données
     loadDataFromURL();
