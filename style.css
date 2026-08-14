@@ -17,6 +17,51 @@
     padding: 0; 
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
 }
+/* --- EN-TÊTE DE LA CARTE --- */
+.flyer-header {
+    background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
+    padding: 30px 65px 20px 20px !important; /* Marge interne à droite réservée pour le logo */
+    text-align: left;
+    color: #ffffff;
+    position: relative !important; /* Indispensable pour fixer le logo à l'intérieur */
+    min-height: 80px;
+}
+
+.flyer-title {
+    margin: 0 0 8px 0;
+    font-size: 1.4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    word-break: break-word;
+}
+
+/* LOGO FIXE : Il ne bougera JAMAIS, même si le texte est effacé */
+.title-logo-fixed {
+    position: absolute !important;
+    top: 15px !important;
+    right: 15px !important;
+    width: 45px !important;
+    height: 45px !important;
+    object-fit: contain;
+    display: block;
+}
+
+.flyer-header p {
+    font-size: 0.85rem;
+    color: #e0f2fe;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+/* Style du logo dans le bandeau de bas de page */
+.promo-logo {
+    width: 40px;  /* Taille agrandie pour le footer */
+    height: 40px;
+    object-fit: contain;
+}
 
 body {
     background-color: var(--bg-dark);

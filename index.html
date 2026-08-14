@@ -26,7 +26,7 @@
             
             <div class="form-group">
                 <label for="inTitle">Titre principal</label>
-                <input type="text" id="inTitle" value="Merci pour ces Vacances ! 🌴">
+                <input type="text" id="inTitle" value="Merci pour ces Vacances !">
             </div>
 
             <div class="form-group">
@@ -41,11 +41,12 @@
                     <input type="file" id="inMedia" accept="image/*" multiple>
                 </label>
             </div>
-               <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX) -->
-                  <div id="imageModal" class="image-modal">
-                   <span class="close-modal">&times;</span>
-                     <img class="modal-content" id="imgFull">
-                </div>
+            
+            <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX) -->
+            <div id="imageModal" class="image-modal">
+                <span class="close-modal">&times;</span>
+                <img class="modal-content" id="imgFull">
+            </div>
 
             <div class="form-group">
                 <label for="inMessage">Message aux proches</label>
@@ -60,37 +61,45 @@ Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve 
                 <button type="button" class="btn-export btn-share" id="btnShare">🚀 Partager la carte</button>
             </div>
         </section>
-
         <!-- PRÉVISUALISATION DU FLYER -->
-        <section class="preview-area">
-            <div class="flyer-card" id="flyerCard">
-                <header class="flyer-header">
-                    <h3 id="outTitle">Merci pour ces Vacances ! 🌴</h3>
-                    <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
-                </header>
-                
-                <div class="media-gallery" id="mediaGallery">
-                    <div class="placeholder-box">Vos photos apparaîtront ici...</div>
-                </div>
+<section class="preview-area">
+    <div class="flyer-card" id="flyerCard">
+        <header class="flyer-header">
+            <!-- Le titre se modifie en JS -->
+            <h3 class="flyer-title">
+                <span id="outTitle">Merci pour ces Vacances !</span>
+            </h3>
+            
+            <!-- Logo avec la BONNE classe 'title-logo-fixed' -->
+            <img src="icons/app_logo.jpg" alt="Logo" class="title-logo-fixed">
+            
+            <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
+        </header>
 
-                <div class="flyer-body">
-                    <p class="flyer-message" id="outMessage">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
+        <div class="media-gallery" id="mediaGallery">
+            <div class="placeholder-box">Vos photos apparaîtront ici...</div>
+        </div>
+
+        <div class="flyer-body">
+            <p class="flyer-message" id="outMessage">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
 
 Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve très vite !</p>
-                </div>
+        </div>
 
-                <!-- BANDEAU VIRAL (Affiche le lien de l'app sur l'image) -->
-                <footer class="app-promo-footer">
-                    <div class="promo-content">
-                        <span class="promo-icon">📱</span>
-                        <div class="promo-text">
-                            <strong>Crée toi aussi ta carte de vacances !</strong>
-                            <p>Télécharge l'application sur : <span>https://agbalaolivier.github.io/souvenirs_vacances/</span></p>
-                        </div>
-                    </div>
-                </footer>
+        <!-- BANDEAU VIRAL -->
+        <footer class="app-promo-footer">
+            <div class="promo-content">
+                <img src="icons/app_logo.jpg" alt="Logo" class="promo-logo">
+                <div class="promo-text">
+                    <strong>Crée toi aussi ta carte de vacances !</strong>
+                    <p>Télécharge l'application sur : <span>https://agbalaolivier.github.io/souvenirs_vacances/</span></p>
+                </div>
             </div>
-        </section>
+        </footer>
+    </div>
+</section>
+
+       
     </main>
 
     <script src="app.js"></script>
