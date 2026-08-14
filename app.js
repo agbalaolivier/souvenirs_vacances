@@ -1,3 +1,5 @@
+// Au tout début du fichier app.js
+const APP_LINK = "https://agbalaolivier.github.io/souvenirs_vacances/";
 document.addEventListener('DOMContentLoaded', () => {
     // URL de votre application (à remplacer par votre vrai lien web ou PlayStore/AppStore)
     const APP_LINK = "https://mon-app-vacances.com"; 
