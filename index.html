@@ -41,11 +41,16 @@
                     <input type="file" id="inMedia" accept="image/*" multiple>
                 </label>
             </div>
-               <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX) -->
-                  <div id="imageModal" class="image-modal">
-                   <span class="close-modal">&times;</span>
-                     <img class="modal-content" id="imgFull">
-                </div>
+                  <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX HD) -->
+<div id="imageModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <div class="modal-wrapper">
+        <img class="modal-content" id="imgFull" alt="Photo en grand">
+        <a id="btnDownloadSingleImg" class="btn-download-single" download="photo-souvenir.jpg">
+            ⬇️ Télécharger cette photo en HD
+        </a>
+    </div>
+</div>
 
             <div class="form-group">
                 <label for="inMessage">Message aux proches</label>

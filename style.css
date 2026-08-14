@@ -289,6 +289,67 @@ body {
     white-space: pre-line;
     font-weight: 500;
 }
+/* LIGHTBOX INTERACTIVE ET BOUTON DE TÉLÉCHARGEMENT */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(9, 13, 22, 0.95);
+    backdrop-filter: blur(12px);
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    max-width: 90%;
+    max-height: 90vh;
+}
+
+.modal-content {
+    max-width: 100%;
+    max-height: 75vh;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    object-fit: contain;
+    cursor: pointer; /* Un clic sur la photo la réduit */
+    animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-download-single {
+    background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
+    color: #ffffff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 10px 20px -5px rgba(6, 182, 212, 0.4);
+    transition: transform 0.2s ease;
+}
+
+.btn-download-single:hover {
+    transform: scale(1.05);
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 25px;
+    color: #ffffff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.8;
+}
 /* STYLES DE LA MODALE PLEIN ÉCRAN (LIGHTBOX) */
 .media-item {
     cursor: pointer;
@@ -300,41 +361,11 @@ body {
     box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
-.image-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
-    backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
 
-.modal-content {
-    max-width: 90%;
-    max-height: 85vh;
-    border-radius: 16px;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
-    object-fit: contain;
-    animation: zoomIn 0.25s ease-out;
-}
 
-.close-modal {
-    position: absolute;
-    top: 20px;
-    right: 25px;
-    color: #ffffff;
-    font-size: 35px;
-    font-weight: bold;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-}
+
+
+
 
 .close-modal:hover {
     opacity: 1;

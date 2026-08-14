@@ -2,7 +2,7 @@
 const APP_LINK = "https://agbalaolivier.github.io/souvenirs_vacances/";
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Récupération de tous les éléments du DOM
+    // 1. Récupération des éléments du DOM
     const inTitle = document.getElementById('inTitle');
     const inSubtitle = document.getElementById('inSubtitle');
     const inMessage = document.getElementById('inMessage');
@@ -21,21 +21,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageModal = document.getElementById('imageModal');
     const imgFull = document.getElementById('imgFull');
     const closeModal = document.querySelector('.close-modal');
+    const btnDownloadSingleImg = document.getElementById('btnDownloadSingleImg');
 
-    // 2. Gestion de la fermeture de la modale d'image
+    // 2. Fermeture de la modale au clic sur la croix ou en dehors
     if (closeModal && imageModal) {
         closeModal.addEventListener('click', () => imageModal.style.display = 'none');
         imageModal.addEventListener('click', (e) => {
-            if (e.target !== imgFull) imageModal.style.display = 'none';
+            if (e.target !== imgFull && e.target !== btnDownloadSingleImg) {
+                imageModal.style.display = 'none';
+            }
         });
     }
 
-    // 3. Mise à jour dynamique du texte
+    // 3. Clic sur l'image agrandie pour la réduire (miniaturiser)
+    if (imgFull && imageModal) {
+        imgFull.addEventListener('click', () => {
+            imageModal.style.display = 'none';
+        });
+    }
+
+    // 4. Mise à jour dynamique des textes
     if (inTitle) inTitle.addEventListener('input', e => outTitle.innerText = e.target.value);
     if (inSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.innerText = e.target.value);
     if (inMessage) inMessage.addEventListener('input', e => outMessage.innerText = e.target.value);
 
-    // 4. Chargement des photos + Zoom au clic
+    // 5. Chargement des photos + Zoom HD au clic
     if (inMedia) {
         inMedia.addEventListener('change', e => {
             const files = e.target.files;
@@ -54,11 +64,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         img.src = ev.target.result;
                         img.className = 'media-item';
 
-                        // CLIC SUR LA PHOTO = OUVERTURE EN PLEIN ÉCRAN
+                        // CLIC SUR UNE PHOTO = OUVERTURE EN HD
                         img.addEventListener('click', () => {
                             if (imgFull && imageModal) {
                                 imgFull.src = ev.target.result;
                                 imageModal.style.display = 'flex';
+
+                                // Attache la photo au bouton de téléchargement HD
+                                if (btnDownloadSingleImg) {
+                                    btnDownloadSingleImg.href = ev.target.result;
+                                }
                             }
                         });
 
@@ -70,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Télécharger la carte en image PNG
+    // 6. Télécharger toute la carte en PNG
     if (btnDownload) {
         btnDownload.addEventListener('click', () => {
             html2canvas(flyerCard, { scale: 2 }).then(canvas => {
@@ -82,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 6. Partager : L'IMAGE + LE LIEN CLIQUABLE VERS L'APP
+    // 7. Partager la carte + Lien vers l'application
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
             const canvas = await html2canvas(flyerCard, { scale: 2 });
