@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
+/* ==========================================
+   1. VARIABLES & RESET GLOBAL
+   ========================================== */
 :root {
     --primary: #06b6d4;
     --primary-gradient: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
@@ -30,7 +33,9 @@ body {
     padding: 40px 20px;
 }
 
-/* EN-TÊTE PRINCIPALE */
+/* ==========================================
+   2. EN-TÊTE PRINCIPALE & LAYOUT
+   ========================================== */
 .main-title {
     text-align: center;
     margin-bottom: 40px;
@@ -52,7 +57,6 @@ body {
     font-weight: 600;
 }
 
-/* GRILLE PRINCIPALE */
 .container {
     max-width: 1100px;
     margin: 0 auto;
@@ -68,7 +72,9 @@ body {
     }
 }
 
-/* PANNEAU FORMULAIRE (GLASSMORPHISM) */
+/* ==========================================
+   3. PANNEAU FORMULAIRE / ÉDITEUR
+   ========================================== */
 .editor-panel {
     background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(20px);
@@ -122,7 +128,7 @@ body {
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
 }
 
-/* BOUTON SELECTION MEDIA */
+/* Bouton d'import de médias */
 .file-upload-btn {
     display: flex;
     align-items: center;
@@ -148,7 +154,7 @@ body {
     display: none; 
 }
 
-/* BOUTONS D'EXPORT */
+/* Boutons d'export (Télécharger & Partager) */
 .export-actions {
     display: flex;
     gap: 14px;
@@ -192,7 +198,9 @@ body {
     box-shadow: 0 12px 25px -5px rgba(255, 126, 95, 0.4);
 }
 
-/* --- ZONE FLYER / CARTE SOUVENIR --- */
+/* ==========================================
+   4. CARTE / FLYER SOUVENIR (PREVIEW)
+   ========================================== */
 .preview-area {
     display: flex;
     justify-content: center;
@@ -240,7 +248,7 @@ body {
     border-radius: 20px;
 }
 
-/* GALERIE PHOTO SUR LA CARTE */
+/* Galerie d'images dans la carte */
 .media-gallery {
     padding: 20px;
     display: grid;
@@ -258,7 +266,13 @@ body {
     object-fit: cover;
     border-radius: 18px;
     box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-item:hover {
+    transform: scale(1.03);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .placeholder-box {
@@ -275,7 +289,6 @@ body {
     background: #ffffff;
 }
 
-/* CORPS DE LA CARTE */
 .flyer-body {
     padding: 24px;
     text-align: center;
@@ -289,7 +302,10 @@ body {
     white-space: pre-line;
     font-weight: 500;
 }
-/* LIGHTBOX INTERACTIVE ET BOUTON DE TÉLÉCHARGEMENT */
+
+/* ==========================================
+   5. LIGHTBOX INTERACTIVE (ZOOM HD & TELECHARGEMENT)
+   ========================================== */
 .image-modal {
     display: none;
     position: fixed;
@@ -320,7 +336,7 @@ body {
     border-radius: 20px;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     object-fit: contain;
-    cursor: pointer; /* Un clic sur la photo la réduit */
+    cursor: pointer; /* Un clic sur la photo agrandie la ferme */
     animation: zoomIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -349,23 +365,8 @@ body {
     font-weight: bold;
     cursor: pointer;
     opacity: 0.8;
+    transition: opacity 0.2s ease;
 }
-/* STYLES DE LA MODALE PLEIN ÉCRAN (LIGHTBOX) */
-.media-item {
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.media-item:hover {
-    transform: scale(1.03);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-}
-
-
-
-
-
-
 
 .close-modal:hover {
     opacity: 1;
@@ -376,12 +377,14 @@ body {
     to { transform: scale(1); opacity: 1; }
 }
 
-/* BANNIÈRE DE PROMOTION EN BAS (VIRALE) */
+/* ==========================================
+   6. FOOTER VIRAL EN BAS DE LA CARTE
+   ========================================== */
 .app-promo-footer {
     background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: white;
     padding: 16px 20px;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .promo-content {
@@ -392,7 +395,7 @@ body {
 
 .promo-icon {
     font-size: 1.8rem;
-    background: rgba(255,255,255,0.1);
+    background: rgba(255, 255, 255, 0.1);
     padding: 8px;
     border-radius: 14px;
     display: flex;
