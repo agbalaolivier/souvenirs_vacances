@@ -1,14 +1,9 @@
-// URL officielle de votre application sur GitHub Pages
 const APP_LINK = "https://agbalaolivier.github.io/souvenirs_vacances/";
 
-// Variables globales pour la galerie Lightbox
 let loadedPhotos = [];
 let currentPhotoIndex = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // -------------------------------------------------------------
-    // 1. RÉCUPÉRATION DES ÉLÉMENTS DU DOM
-    // -------------------------------------------------------------
     const inTitle = document.getElementById('inTitle');
     const inSubtitle = document.getElementById('inSubtitle');
     const inMessage = document.getElementById('inMessage');
@@ -22,8 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDownload = document.getElementById('btnDownload');
     const btnShare = document.getElementById('btnShare');
     const flyerCard = document.getElementById('flyerCard');
+    const readModeBanner = document.getElementById('readModeBanner');
 
-    // Éléments de la Modale Lightbox
+    // Lightbox
     const imageModal = document.getElementById('imageModal');
     const imgFull = document.getElementById('imgFull');
     const closeModal = document.querySelector('.close-modal');
@@ -33,14 +29,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPhoto = document.getElementById('nextPhoto');
 
     // -------------------------------------------------------------
-    // 2. MISE À JOUR DYNAMIQUE DES TEXTES
+    // GESTION DU MODE LECTURE (SI ACCÈS VIA UN LIEN PARTAGÉ)
     // -------------------------------------------------------------
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharedTitle = urlParams.get('title');
+    const sharedSubtitle = urlParams.get('sub');
+    const sharedMessage = urlParams.get('msg');
+
+    if (sharedTitle || sharedMessage) {
+        // Remplissage des textes partagés
+        if (sharedTitle && outTitle) outTitle.textContent = sharedTitle;
+        if (sharedSubtitle && outSubtitle) outSubtitle.textContent = sharedSubtitle;
+        if (sharedMessage && outMessage) outMessage.textContent = sharedMessage;
+
+        // Afficher la bannière d'invitation à créer sa propre carte
+        if (readModeBanner) readModeBanner.style.display = 'flex';
+    }
+
+    // Mise à jour synchrone lors de la saisie
     if (inTitle && outTitle) inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
     if (inSubtitle && outSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
     if (inMessage && outMessage) inMessage.addEventListener('input', e => outMessage.textContent = e.target.value);
 
     // -------------------------------------------------------------
-    // 3. GESTION DE LA GALERIE PHOTO & LIGHTBOX (STYLE WHATSAPP)
+    // GALERIE PHOTO & LIGHTBOX
     // -------------------------------------------------------------
     function updateLightbox(index) {
         if (loadedPhotos.length === 0) return;
@@ -52,12 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         btnDownloadSingle.download = `photo-vacances-${currentPhotoIndex + 1}.jpg`;
         modalCounter.textContent = `${currentPhotoIndex + 1} / ${loadedPhotos.length}`;
         
-        // Affichage conditionnel des flèches
         prevPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
         nextPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
     }
 
-    // Navigation entre les photos
     if (prevPhoto) {
         prevPhoto.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -74,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Fermeture de la modale
     if (closeModal && imageModal) {
         closeModal.addEventListener('click', () => imageModal.style.display = 'none');
         imageModal.addEventListener('click', (e) => {
@@ -84,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Importation des photos depuis l'ordinateur/téléphone
     if (inMedia) {
         inMedia.addEventListener('change', e => {
             const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
@@ -108,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     img.src = src;
                     img.className = 'media-item';
 
-                    // Clic sur l'image = Ouverture de la visionneuse
                     img.addEventListener('click', () => {
                         updateLightbox(loadedPhotos.indexOf(src));
                         imageModal.style.display = 'flex';
@@ -122,24 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 4. FONCTION UTILITAIRE : GÉNÉRATION SÉCURISÉE DU CANVAS
+    // GENERATION CANVAS
     // -------------------------------------------------------------
     async function generateCanvas() {
         if (typeof html2canvas === 'undefined') {
-            throw new Error("La bibliothèque html2canvas n'est pas chargée dans la page.");
+            throw new Error("html2canvas non trouvé.");
         }
-
         return await html2canvas(flyerCard, {
             scale: 2,
             useCORS: true,
-            allowTaint: false, // Empêche l'erreur 'Tainted canvas' sur toBlob()
+            allowTaint: false,
             logging: false
         });
     }
 
-    // -------------------------------------------------------------
-    // 5. BOUTON : ENREGISTRER L'IMAGE DE LA CARTE
-    // -------------------------------------------------------------
+    // Télécharger la carte
     if (btnDownload) {
         btnDownload.addEventListener('click', async () => {
             const originalText = btnDownload.innerText;
@@ -153,8 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             } catch (err) {
-                console.error("Erreur d'exportation :", err);
-                alert("Impossible de générer l'image : " + err.message);
+                alert("Erreur lors de la création de l'image : " + err.message);
             } finally {
                 btnDownload.innerText = originalText;
                 btnDownload.disabled = false;
@@ -163,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 6. BOUTON : PARTAGER LA CARTE ET L'APPLICATION
+    // PARTAGER LA CARTE + GENERER LE LIEN DYNAMIQUE
     // -------------------------------------------------------------
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
@@ -172,39 +175,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnShare.innerText = "⏳ Préparation...";
                 btnShare.disabled = true;
 
+                // Construction du lien personnalisé avec les paramètres de la carte
+                const currentTitle = encodeURIComponent(outTitle ? outTitle.textContent : '');
+                const currentSub = encodeURIComponent(outSubtitle ? outSubtitle.textContent : '');
+                const currentMsg = encodeURIComponent(outMessage ? outMessage.textContent : '');
+
+                const interactiveLink = `${APP_LINK}?title=${currentTitle}&sub=${currentSub}&msg=${currentMsg}`;
+
+                const shareMessage = `🌴 Regarde ma carte souvenir de vacances !\n\n✨ Découvre les photos en HD et défile l'album ici :\n👉 ${interactiveLink}\n\n🎨 Crée toi aussi ta propre carte gratuitement !`;
+
                 const canvas = await generateCanvas();
 
                 canvas.toBlob(async (blob) => {
-                    if (!blob) {
-                        alert("Erreur lors de la préparation du fichier image.");
-                        return;
-                    }
+                    if (!blob) return;
 
-                    const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
-                    const shareText = `À peine rentrés et vous me manquez déjà ! 🌴✨\n\nCrée toi aussi ta propre carte souvenir ici :\n${APP_LINK}`;
+                    const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
 
-                    // Vérification de la compatibilité du partage de fichiers natif (mobile)
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
                                 title: 'Mes Souvenirs de Vacances',
-                                text: shareText,
+                                text: shareMessage,
                                 files: [file]
                             });
                         } catch (shareErr) {
-                            if (shareErr.name !== 'AbortError') {
-                                console.log('Partage annulé ou interrompu.');
-                            }
+                            if (shareErr.name !== 'AbortError') console.log('Partage annulé');
                         }
                     } else {
-                        // Secours : Copie le lien dans le presse-papier pour ordinateur
-                        await navigator.clipboard.writeText(shareText);
-                        alert("Le lien de l'application a été copié dans votre presse-papier ! (Le partage direct de fichiers est réservé aux mobiles)");
+                        await navigator.clipboard.writeText(shareMessage);
+                        alert("Le message et le lien interactif ont été copiés ! Collez-les directement dans WhatsApp.");
                     }
                 }, 'image/png');
 
             } catch (err) {
-                console.error("Erreur de partage :", err);
                 alert("Impossible de préparer le partage : " + err.message);
             } finally {
                 btnShare.innerText = originalText;
