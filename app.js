@@ -4,6 +4,9 @@ let loadedPhotos = [];
 let currentPhotoIndex = 0;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // -------------------------------------------------------------
+    // 1. SÉLECTION DES ÉLÉMENTS DU DOM
+    // -------------------------------------------------------------
     const inTitle = document.getElementById('inTitle');
     const inSubtitle = document.getElementById('inSubtitle');
     const inMessage = document.getElementById('inMessage');
@@ -29,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPhoto = document.getElementById('nextPhoto');
 
     // -------------------------------------------------------------
-    // GESTION DU MODE LECTURE (SI ACCÈS VIA UN LIEN PARTAGÉ)
+    // 2. GESTION DU MODE LECTURE (SI ACCÈS VIA UN LIEN PARTAGÉ)
     // -------------------------------------------------------------
     const urlParams = new URLSearchParams(window.location.search);
     const sharedTitle = urlParams.get('title');
@@ -40,32 +43,50 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remplissage des textes partagés
         if (sharedTitle && outTitle) outTitle.textContent = sharedTitle;
         if (sharedSubtitle && outSubtitle) outSubtitle.textContent = sharedSubtitle;
-        if (sharedMessage && outMessage) outMessage.textContent = sharedMessage;
+        // Limite également le message partagé à 30 chars par sécurité
+        if (sharedMessage && outMessage) outMessage.textContent = sharedMessage.slice(0, 30);
 
         // Afficher la bannière d'invitation à créer sa propre carte
         if (readModeBanner) readModeBanner.style.display = 'flex';
     }
 
-    // Mise à jour synchrone lors de la saisie
-    if (inTitle && outTitle) inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
-    if (inSubtitle && outSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
-    if (inMessage && outMessage) inMessage.addEventListener('input', e => outMessage.textContent = e.target.value);
+    // -------------------------------------------------------------
+    // 3. MISE À JOUR SYNCHRONE LORS DE LA SAISIE
+    // -------------------------------------------------------------
+    if (inTitle && outTitle) {
+        inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
+    }
+    
+    if (inSubtitle && outSubtitle) {
+        inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
+    }
+
+    // Message : tronqué automatiquement à 30 caractères maximum
+    if (inMessage && outMessage) {
+        inMessage.addEventListener('input', e => {
+            outMessage.textContent = e.target.value.slice(0, 30);
+        });
+    }
 
     // -------------------------------------------------------------
-    // GALERIE PHOTO & LIGHTBOX
+    // 4. GALERIE PHOTO & LIGHTBOX (STYLE WHATSAPP)
     // -------------------------------------------------------------
     function updateLightbox(index) {
         if (loadedPhotos.length === 0) return;
         currentPhotoIndex = index;
         
         const photoData = loadedPhotos[currentPhotoIndex];
-        imgFull.src = photoData;
-        btnDownloadSingle.href = photoData;
-        btnDownloadSingle.download = `photo-vacances-${currentPhotoIndex + 1}.jpg`;
-        modalCounter.textContent = `${currentPhotoIndex + 1} / ${loadedPhotos.length}`;
+        if (imgFull) imgFull.src = photoData;
+        if (btnDownloadSingle) {
+            btnDownloadSingle.href = photoData;
+            btnDownloadSingle.download = `photo-vacances-${currentPhotoIndex + 1}.jpg`;
+        }
+        if (modalCounter) {
+            modalCounter.textContent = `${currentPhotoIndex + 1} / ${loadedPhotos.length}`;
+        }
         
-        prevPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
-        nextPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
+        if (prevPhoto) prevPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
+        if (nextPhoto) nextPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
     }
 
     if (prevPhoto) {
@@ -93,6 +114,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Clavier pour la lightbox (Flèches & Échap)
+    document.addEventListener('keydown', (e) => {
+        if (imageModal && imageModal.style.display === 'flex') {
+            if (e.key === 'ArrowRight' && nextPhoto) nextPhoto.click();
+            if (e.key === 'ArrowLeft' && prevPhoto) prevPhoto.click();
+            if (e.key === 'Escape' && closeModal) closeModal.click();
+        }
+    });
+
     if (inMedia) {
         inMedia.addEventListener('change', e => {
             const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
@@ -118,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     img.addEventListener('click', () => {
                         updateLightbox(loadedPhotos.indexOf(src));
-                        imageModal.style.display = 'flex';
+                        if (imageModal) imageModal.style.display = 'flex';
                     });
 
                     mediaGallery.appendChild(img);
@@ -129,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // GENERATION CANVAS
+    // 5. GÉNÉRATION CANVAS (html2canvas)
     // -------------------------------------------------------------
     async function generateCanvas() {
         if (typeof html2canvas === 'undefined') {
@@ -166,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // PARTAGER LA CARTE + GENERER LE LIEN DYNAMIQUE
+    // 6. PARTAGER LA CARTE + GÉNÉRER LE LIEN DYNAMIQUE
     // -------------------------------------------------------------
     if (btnShare) {
         btnShare.addEventListener('click', async () => {

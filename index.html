@@ -26,7 +26,7 @@
             
             <div class="form-group">
                 <label for="inTitle">Titre principal</label>
-                <input type="text" id="inTitle" value="Merci pour ces Vacances ! 🌴">
+                <input type="text" id="inTitle" value="Merci pour ces Vacances !">
             </div>
 
             <div class="form-group">
@@ -41,33 +41,31 @@
                     <input type="file" id="inMedia" accept="image/*" multiple>
                 </label>
             </div>
-                  <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX HD) -->
-<!-- MODALE PLEIN ÉCRAN AMÉLIORÉE (STYLE WHATSAPP) -->
-<div id="imageModal" class="whatsapp-lightbox">
-    <!-- Barre d'outils supérieure -->
-    <div class="lightbox-header">
-        <span class="lightbox-counter" id="modalCounter">1 / 1</span>
-        <div class="lightbox-actions">
-            <a id="btnDownloadSingle" class="lightbox-btn" download="photo-vacances.jpg" title="Télécharger cette photo">
-                📥
-            </a>
-            <button type="button" class="close-modal lightbox-btn" title="Fermer">&times;</button>
-        </div>
-    </div>
 
-    <!-- Zone d'affichage de la photo -->
-    <div class="lightbox-content-wrapper">
-        <button type="button" id="prevPhoto" class="nav-btn prev-btn">&#10094;</button>
-        <img class="modal-content" id="imgFull" alt="Photo plein écran">
-        <button type="button" id="nextPhoto" class="nav-btn next-btn">&#10095;</button>
-    </div>
-</div>
+            <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX HD) -->
+            <div id="imageModal" class="whatsapp-lightbox">
+                <!-- Barre d'outils supérieure -->
+                <div class="lightbox-header">
+                    <span class="lightbox-counter" id="modalCounter">1 / 1</span>
+                    <div class="lightbox-actions">
+                        <a id="btnDownloadSingle" class="lightbox-btn" download="photo-vacances.jpg" title="Télécharger cette photo">
+                            📥
+                        </a>
+                        <button type="button" class="close-modal lightbox-btn" title="Fermer">&times;</button>
+                    </div>
+                </div>
+
+                <!-- Zone d'affichage de la photo -->
+                <div class="lightbox-content-wrapper">
+                    <button type="button" id="prevPhoto" class="nav-btn prev-btn">&#10094;</button>
+                    <img class="modal-content" id="imgFull" alt="Photo plein écran">
+                    <button type="button" id="nextPhoto" class="nav-btn next-btn">&#10095;</button>
+                </div>
+            </div>
 
             <div class="form-group">
-                <label for="inMessage">Message aux proches</label>
-                <textarea id="inMessage" rows="4">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
-
-Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve très vite !</textarea>
+                <label for="inMessage">Message aux proches (max 30 caractères)</label>
+                <input type="text" id="inMessage" value="Des souvenirs gravés !" maxlength="30">
             </div>
 
             <!-- ACTIONS -->
@@ -81,39 +79,43 @@ Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve 
         <section class="preview-area">
             <div class="flyer-card" id="flyerCard">
                 <header class="flyer-header">
-                    <h3 id="outTitle">Merci pour ces Vacances ! 🌴</h3>
+                    <div class="title-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <h3 id="outTitle">Merci pour ces Vacances !</h3>
+                        <!-- LOGO STATIQUE (Ajustez le src si votre image est dans un dossier comme assets/logo.png) -->
+                        <img src="icons/app_logo.jpg" alt="Logo" class="static-logo" style="height: 24px; width: auto;">
+                    </div>
                     <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
                 </header>
                 
                 <div class="media-gallery" id="mediaGallery">
                     <div class="placeholder-box">Vos photos apparaîtront ici...</div>
-                    <!-- À INSÉRER AU BAS DE VOTRE #flyerCard DANS index.html -->
-<div class="card-footer-cta">
-    <p class="cta-instruction">✨ Cliquez sur le lien reçu pour voir les photos en HD & défiler !</p>
-    <div class="cta-app-link">
-        Créer ta propre carte ➡️ <span class="link-url">agbalaolivier.github.io/souvenirs_vacances</span>
-    </div>
-</div>
+                    
+                    <div class="card-footer-cta">
+                        <p class="cta-instruction">✨ Cliquez sur le lien reçu pour voir les photos en HD & défiler !</p>
+                        <div class="cta-app-link">
+                            Créer ta propre carte ➡️ <span class="link-url">agbalaolivier.github.io/souvenirs_vacances</span>
+                        </div>
+                    </div>
 
-<!-- BOUTON D'INVITATION (Affiché quand quelqu'un consulte une carte partagée) -->
-<div id="readModeBanner" class="read-mode-banner" style="display: none;">
-    <p>🎉 Vous consultez une carte souvenir partagée !</p>
-    <a href="https://agbalaolivier.github.io/souvenirs_vacances/" class="btn-create-own">
-        ➕ Créer ma propre carte souvenir
-    </a>
-</div>
+                    <!-- BOUTON D'INVITATION (Affiché en mode lecture) -->
+                    <div id="readModeBanner" class="read-mode-banner" style="display: none;">
+                        <p>🎉 Vous consultez une carte souvenir partagée !</p>
+                        <a href="https://agbalaolivier.github.io/souvenirs_vacances/" class="btn-create-own">
+                            ➕ Créer ma propre carte souvenir
+                        </a>
+                    </div>
                 </div>
 
+                <!-- MESSAGE RÉDUIT (25-30 CARACTÈRES) -->
                 <div class="flyer-body">
-                    <p class="flyer-message" id="outMessage">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
-
-Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve très vite !</p>
+                    <p class="flyer-message" id="outMessage">Des souvenirs gravés !</p>
                 </div>
 
-                <!-- BANDEAU VIRAL (Affiche le lien de l'app sur l'image) -->
+                <!-- BANDEAU VIRAL -->
                 <footer class="app-promo-footer">
                     <div class="promo-content">
-                        <span class="promo-icon">📱</span>
+                        <!-- LOGO STATIQUE EN BAS -->
+                        <img src="logo.png" alt="Logo" class="promo-icon-img" style="height: 28px; width: auto;">
                         <div class="promo-text">
                             <strong>Crée toi aussi ta carte de vacances !</strong>
                             <p>Télécharge l'application sur : <span>https://agbalaolivier.github.io/souvenirs_vacances/</span></p>
