@@ -42,13 +42,24 @@
                 </label>
             </div>
                   <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX HD) -->
-<div id="imageModal" class="image-modal">
-    <span class="close-modal">&times;</span>
-    <div class="modal-wrapper">
-        <img class="modal-content" id="imgFull" alt="Photo en grand">
-        <a id="btnDownloadSingleImg" class="btn-download-single" download="photo-souvenir.jpg">
-            ⬇️ Télécharger cette photo en HD
-        </a>
+<!-- MODALE PLEIN ÉCRAN AMÉLIORÉE (STYLE WHATSAPP) -->
+<div id="imageModal" class="whatsapp-lightbox">
+    <!-- Barre d'outils supérieure -->
+    <div class="lightbox-header">
+        <span class="lightbox-counter" id="modalCounter">1 / 1</span>
+        <div class="lightbox-actions">
+            <a id="btnDownloadSingle" class="lightbox-btn" download="photo-vacances.jpg" title="Télécharger cette photo">
+                📥
+            </a>
+            <button type="button" class="close-modal lightbox-btn" title="Fermer">&times;</button>
+        </div>
+    </div>
+
+    <!-- Zone d'affichage de la photo -->
+    <div class="lightbox-content-wrapper">
+        <button type="button" id="prevPhoto" class="nav-btn prev-btn">&#10094;</button>
+        <img class="modal-content" id="imgFull" alt="Photo plein écran">
+        <button type="button" id="nextPhoto" class="nav-btn next-btn">&#10095;</button>
     </div>
 </div>
 

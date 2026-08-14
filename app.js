@@ -1,8 +1,14 @@
 // URL officielle de votre application sur GitHub Pages
 const APP_LINK = "https://agbalaolivier.github.io/souvenirs_vacances/";
 
+// Variables globales pour la galerie Lightbox
+let loadedPhotos = [];
+let currentPhotoIndex = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Récupération des éléments du DOM
+    // -------------------------------------------------------------
+    // 1. RÉCUPÉRATION DES ÉLÉMENTS DU DOM
+    // -------------------------------------------------------------
     const inTitle = document.getElementById('inTitle');
     const inSubtitle = document.getElementById('inSubtitle');
     const inMessage = document.getElementById('inMessage');
@@ -17,210 +23,193 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnShare = document.getElementById('btnShare');
     const flyerCard = document.getElementById('flyerCard');
 
-    // Modale (Lightbox HD)
+    // Éléments de la Modale Lightbox
     const imageModal = document.getElementById('imageModal');
     const imgFull = document.getElementById('imgFull');
     const closeModal = document.querySelector('.close-modal');
-    const btnDownloadSingleImg = document.getElementById('btnDownloadSingleImg');
+    const btnDownloadSingle = document.getElementById('btnDownloadSingle');
+    const modalCounter = document.getElementById('modalCounter');
+    const prevPhoto = document.getElementById('prevPhoto');
+    const nextPhoto = document.getElementById('nextPhoto');
 
-    // Tableau stockant les images courantes (en Base64)
-    let currentImages = [];
+    // -------------------------------------------------------------
+    // 2. MISE À JOUR DYNAMIQUE DES TEXTES
+    // -------------------------------------------------------------
+    if (inTitle && outTitle) inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
+    if (inSubtitle && outSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
+    if (inMessage && outMessage) inMessage.addEventListener('input', e => outMessage.textContent = e.target.value);
 
-    // --- FONCTION MAGIQUE : COMPRESSION DES IMAGES POUR L'URL ---
-    function compressImage(base64Str, maxWidth = 500, quality = 0.5) {
-        return new Promise((resolve) => {
-            const img = new Image();
-            img.src = base64Str;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let width = img.width;
-                let height = img.height;
+    // -------------------------------------------------------------
+    // 3. GESTION DE LA GALERIE PHOTO & LIGHTBOX (STYLE WHATSAPP)
+    // -------------------------------------------------------------
+    function updateLightbox(index) {
+        if (loadedPhotos.length === 0) return;
+        currentPhotoIndex = index;
+        
+        const photoData = loadedPhotos[currentPhotoIndex];
+        imgFull.src = photoData;
+        btnDownloadSingle.href = photoData;
+        btnDownloadSingle.download = `photo-vacances-${currentPhotoIndex + 1}.jpg`;
+        modalCounter.textContent = `${currentPhotoIndex + 1} / ${loadedPhotos.length}`;
+        
+        // Affichage conditionnel des flèches
+        prevPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
+        nextPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
+    }
 
-                if (width > maxWidth) {
-                    height = Math.round((height * maxWidth) / width);
-                    width = maxWidth;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                resolve(canvas.toDataURL('image/jpeg', quality));
-            };
+    // Navigation entre les photos
+    if (prevPhoto) {
+        prevPhoto.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newIndex = (currentPhotoIndex - 1 + loadedPhotos.length) % loadedPhotos.length;
+            updateLightbox(newIndex);
         });
     }
 
-    // Fonction pour ouvrir la photo en HD
-    function openLightbox(imageSrc) {
-        if (imgFull && imageModal) {
-            imgFull.src = imageSrc;
-            imageModal.style.display = 'flex';
-
-            if (btnDownloadSingleImg) {
-                btnDownloadSingleImg.href = imageSrc;
-                btnDownloadSingleImg.download = `photo-souvenir-${Date.now()}.jpg`;
-            }
-        }
-    }
-
-    // Réaffichage de la galerie
-    function renderGallery() {
-        mediaGallery.innerHTML = '';
-
-        if (currentImages.length === 0) {
-            mediaGallery.innerHTML = '<div class="placeholder-box">Vos photos apparaîtront ici...</div>';
-            return;
-        }
-
-        currentImages.forEach((src) => {
-            const img = document.createElement('img');
-            img.src = src;
-            img.className = 'media-item';
-
-            // Clic sur l'image = Ouverture HD
-            img.addEventListener('click', () => openLightbox(src));
-
-            mediaGallery.appendChild(img);
+    if (nextPhoto) {
+        nextPhoto.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const newIndex = (currentPhotoIndex + 1) % loadedPhotos.length;
+            updateLightbox(newIndex);
         });
     }
 
-    // --- LECTURE DES PARAMÈTRES DE L'URL (Pour la personne qui reçoit le lien) ---
-    function loadDataFromURL() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const dataParam = urlParams.get('card');
-
-        if (dataParam) {
-            try {
-                const jsonString = decodeURIComponent(atob(dataParam));
-                const decodedData = JSON.parse(jsonString);
-
-                if (decodedData.title && outTitle) outTitle.innerText = decodedData.title;
-                if (decodedData.subtitle && outSubtitle) outSubtitle.innerText = decodedData.subtitle;
-                if (decodedData.message && outMessage) outMessage.innerText = decodedData.message;
-
-                if (decodedData.images && Array.isArray(decodedData.images)) {
-                    currentImages = decodedData.images;
-                    renderGallery();
-                }
-            } catch (err) {
-                console.error("Erreur lors de la lecture des données de l'URL", err);
-            }
-        }
-    }
-
-    // --- ÉVÉNEMENTS SUR LA LIGHTBOX ---
-
+    // Fermeture de la modale
     if (closeModal && imageModal) {
         closeModal.addEventListener('click', () => imageModal.style.display = 'none');
-    }
-
-    if (imgFull && imageModal) {
-        imgFull.addEventListener('click', () => {
-            imageModal.style.display = 'none';
-        });
-    }
-
-    if (imageModal) {
         imageModal.addEventListener('click', (e) => {
-            if (e.target === imageModal) {
+            if (e.target === imageModal || e.target.classList.contains('lightbox-content-wrapper')) {
                 imageModal.style.display = 'none';
             }
         });
     }
 
-    // --- MISE À JOUR DU TEXTE EN TEMPS RÉEL ---
-    if (inTitle) inTitle.addEventListener('input', e => outTitle.innerText = e.target.value || 'Titre');
-    if (inSubtitle) inSubtitle.addEventListener('input', e => outSubtitle.innerText = e.target.value || 'Sous-titre');
-    if (inMessage) inMessage.addEventListener('input', e => outMessage.innerText = e.target.value || 'Votre message...');
-
-    // --- CHARGEMENT DES PHOTOS DEPUIS LE FORMULAIRE (AVEC COMPRESSION) ---
+    // Importation des photos depuis l'ordinateur/téléphone
     if (inMedia) {
         inMedia.addEventListener('change', e => {
-            const files = Array.from(e.target.files);
-            currentImages = [];
+            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+            if (!mediaGallery) return;
+
+            mediaGallery.innerHTML = '';
+            loadedPhotos = [];
 
             if (files.length === 0) {
-                renderGallery();
+                mediaGallery.innerHTML = '<div class="placeholder-box">Vos photos apparaîtront ici...</div>';
                 return;
             }
 
-            let loadedCount = 0;
-            files.forEach(file => {
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        // Compression à la volée
-                        const compressed = await compressImage(ev.target.result, 600, 0.6);
-                        currentImages.push(compressed);
-                        loadedCount++;
+            files.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    const src = ev.target.result;
+                    loadedPhotos.push(src);
 
-                        if (loadedCount === files.length) {
-                            renderGallery();
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                }
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = 'media-item';
+
+                    // Clic sur l'image = Ouverture de la visionneuse
+                    img.addEventListener('click', () => {
+                        updateLightbox(loadedPhotos.indexOf(src));
+                        imageModal.style.display = 'flex';
+                    });
+
+                    mediaGallery.appendChild(img);
+                };
+                reader.readAsDataURL(file);
             });
         });
     }
 
-    // --- TÉLÉCHARGER LE FLYER RESUMÉ (PNG) ---
+    // -------------------------------------------------------------
+    // 4. FONCTION UTILITAIRE : GÉNÉRATION SÉCURISÉE DU CANVAS
+    // -------------------------------------------------------------
+    async function generateCanvas() {
+        if (typeof html2canvas === 'undefined') {
+            throw new Error("La bibliothèque html2canvas n'est pas chargée dans la page.");
+        }
+
+        return await html2canvas(flyerCard, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: false, // Empêche l'erreur 'Tainted canvas' sur toBlob()
+            logging: false
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 5. BOUTON : ENREGISTRER L'IMAGE DE LA CARTE
+    // -------------------------------------------------------------
     if (btnDownload) {
-        btnDownload.addEventListener('click', () => {
-            html2canvas(flyerCard, { scale: 2 }).then(canvas => {
+        btnDownload.addEventListener('click', async () => {
+            const originalText = btnDownload.innerText;
+            try {
+                btnDownload.innerText = "⏳ Génération...";
+                btnDownload.disabled = true;
+
+                const canvas = await generateCanvas();
                 const link = document.createElement('a');
                 link.download = 'carte-souvenir-vacances.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-            });
+            } catch (err) {
+                console.error("Erreur d'exportation :", err);
+                alert("Impossible de générer l'image : " + err.message);
+            } finally {
+                btnDownload.innerText = originalText;
+                btnDownload.disabled = false;
+            }
         });
     }
 
-    // --- PARTAGER : IMAGE + LIEN DYNAMIQUE ---
-    // --- 6. PARTAGER : IMAGE + LIEN DYNAMIQUE ---
-if (btnShare) {
-    btnShare.addEventListener('click', async () => {
-        const cardData = {
-            title: outTitle ? outTitle.innerText : '',
-            subtitle: outSubtitle ? outSubtitle.innerText : '',
-            message: outMessage ? outMessage.innerText : '',
-            images: currentImages
-        };
+    // -------------------------------------------------------------
+    // 6. BOUTON : PARTAGER LA CARTE ET L'APPLICATION
+    // -------------------------------------------------------------
+    if (btnShare) {
+        btnShare.addEventListener('click', async () => {
+            const originalText = btnShare.innerText;
+            try {
+                btnShare.innerText = "⏳ Préparation...";
+                btnShare.disabled = true;
 
-        let shareableUrl = APP_LINK;
-        try {
-            const jsonString = JSON.stringify(cardData);
-            const encodedData = btoa(encodeURIComponent(jsonString));
-            shareableUrl = `${APP_LINK}?card=${encodedData}`;
-        } catch (e) {
-            console.warn("Erreur d'encodage :", e);
-        }
+                const canvas = await generateCanvas();
 
-        const canvas = await html2canvas(flyerCard, { scale: 2 });
-        canvas.toBlob(async (blob) => {
-            const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
-            
-            // Le texte qui partira sur WhatsApp
-            const shareText = `À peine rentrés et vous me manquez déjà ! 🌴✨\n\nRegarde la carte de nos vacances ici :\n${shareableUrl}`;
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        alert("Erreur lors de la préparation du fichier image.");
+                        return;
+                    }
 
-            if (navigator.share && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({
-                        title: 'Mes Souvenirs de Vacances',
-                        text: shareText,
-                        files: [file]
-                    });
-                } catch (err) {
-                    console.log('Partage annulé');
-                }
-            } else {
-                await navigator.clipboard.writeText(shareText);
-                alert('Lien de la carte copié dans le presse-papier !');
+                    const file = new File([blob], 'souvenir-vacances.png', { type: 'image/png' });
+                    const shareText = `À peine rentrés et vous me manquez déjà ! 🌴✨\n\nCrée toi aussi ta propre carte souvenir ici :\n${APP_LINK}`;
+
+                    // Vérification de la compatibilité du partage de fichiers natif (mobile)
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'Mes Souvenirs de Vacances',
+                                text: shareText,
+                                files: [file]
+                            });
+                        } catch (shareErr) {
+                            if (shareErr.name !== 'AbortError') {
+                                console.log('Partage annulé ou interrompu.');
+                            }
+                        }
+                    } else {
+                        // Secours : Copie le lien dans le presse-papier pour ordinateur
+                        await navigator.clipboard.writeText(shareText);
+                        alert("Le lien de l'application a été copié dans votre presse-papier ! (Le partage direct de fichiers est réservé aux mobiles)");
+                    }
+                }, 'image/png');
+
+            } catch (err) {
+                console.error("Erreur de partage :", err);
+                alert("Impossible de préparer le partage : " + err.message);
+            } finally {
+                btnShare.innerText = originalText;
+                btnShare.disabled = false;
             }
         });
-    });
-}
-
-    // Chargement automatique si l'URL contient des données
-    loadDataFromURL();
+    }
 });
