@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+:root {
+    --primary: #06b6d4;
+    --primary-gradient: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
+    --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    --bg-dark: #090d16;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --card-border: rgba(255, 255, 255, 0.12);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+}
+
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(13, 148, 136, 0.25) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255, 126, 95, 0.2) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(6, 182, 212, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    color: var(--text-main);
+    padding: 40px 20px;
+}
+
+/* EN-TÊTE PRINCIPALE */
+.main-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.main-title h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    background: linear-gradient(to right, #38bdf8, #f43f5e, #fbbf24);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+}
+
+.main-title p {
+    color: var(--text-muted);
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+/* GRILLE PRINCIPALE */
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    align-items: start;
+}
+
+@media (min-width: 950px) {
+    .container { 
+        grid-template-columns: 1fr 440px; 
+    }
+}
+
+/* PANNEAU FORMULAIRE (GLASSMORPHISM) */
+.editor-panel {
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 28px;
+    padding: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.editor-panel h2 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group { 
+    margin-bottom: 20px; 
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.form-group input[type="text"], 
+.form-group textarea {
+    width: 100%;
+    background: rgba(2, 6, 23, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: #fff;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+/* BOUTON SELECTION MEDIA */
+.file-upload-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(56, 189, 248, 0.08);
+    border: 2px dashed rgba(56, 189, 248, 0.4);
+    border-radius: 14px;
+    cursor: pointer;
+    color: #38bdf8;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.file-upload-btn:hover { 
+    background: rgba(56, 189, 248, 0.15);
+    border-color: #38bdf8;
+    transform: translateY(-2px);
+}
+
+.file-upload-btn input { 
+    display: none; 
+}
+
+/* BOUTONS D'EXPORT */
+.export-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.btn-export {
+    flex: 1;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+}
+
+.btn-download { 
+    background: #f8fafc; 
+    color: #0f172a; 
+}
+
+.btn-download:hover {
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px -5px rgba(255, 255, 255, 0.3);
+}
+
+.btn-share { 
+    background: var(--accent-gradient); 
+    color: #ffffff; 
+}
+
+.btn-share:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px -5px rgba(255, 126, 95, 0.4);
+}
+
+/* --- ZONE FLYER / CARTE SOUVENIR --- */
+.preview-area {
+    display: flex;
+    justify-content: center;
+    position: sticky;
+    top: 20px;
+}
+
+.flyer-card {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.6);
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.flyer-header {
+    background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
+    padding: 36px 28px 28px 28px;
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+}
+
+.flyer-header h3 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.flyer-header p {
+    font-size: 0.85rem;
+    color: #e0f2fe;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+}
+
+/* GALERIE PHOTO SUR LA CARTE */
+.media-gallery {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    min-height: 160px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+.media-item {
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.placeholder-box {
+    grid-column: 1 / -1;
+    height: 140px;
+    border: 2px dashed #cbd5e1;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.9rem;
+    background: #ffffff;
+}
+
+/* CORPS DE LA CARTE */
+.flyer-body {
+    padding: 24px;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.flyer-message {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    white-space: pre-line;
+    font-weight: 500;
+}
+
+/* BANNIÈRE DE PROMOTION EN BAS (VIRALE) */
+.app-promo-footer {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: white;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.promo-content {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.promo-icon {
+    font-size: 1.8rem;
+    background: rgba(255,255,255,0.1);
+    padding: 8px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.promo-text strong {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #38bdf8;
+    letter-spacing: -0.2px;
+}
+
+.promo-text p {
+    margin: 2px 0 0 0;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.promo-text span {
+    color: #fcd34d;
+    font-weight: 700;
+}

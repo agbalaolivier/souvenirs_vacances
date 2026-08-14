@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Souvenirs de Vacances</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d9488">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+    <header class="main-title">
+        <h1>Créez votre Souvenir de Vacances</h1>
+        <p>Générez une carte souvenir élégante et partagez-la à vos proches</p>
+    </header>
+
+    <main class="container">
+        <!-- FORMULAIRE ÉDITEUR -->
+        <section class="editor-panel">
+            <h2>⚙️ Créer ma Carte</h2>
+            
+            <div class="form-group">
+                <label for="inTitle">Titre principal</label>
+                <input type="text" id="inTitle" value="Merci pour ces Vacances ! 🌴">
+            </div>
+
+            <div class="form-group">
+                <label for="inSubtitle">Sous-titre / Date</label>
+                <input type="text" id="inSubtitle" value="Été 2026 • Des moments inoubliables">
+            </div>
+
+            <div class="form-group">
+                <label>Photos de vacances</label>
+                <label class="file-upload-btn">
+                    📁 Sélectionner des photos
+                    <input type="file" id="inMedia" accept="image/*" multiple>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="inMessage">Message aux proches</label>
+                <textarea id="inMessage" rows="4">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
+
+Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve très vite !</textarea>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="export-actions">
+                <button type="button" class="btn-export btn-download" id="btnDownload">📸 Enregistrer l'image</button>
+                <button type="button" class="btn-export btn-share" id="btnShare">🚀 Partager la carte</button>
+            </div>
+        </section>
+
+        <!-- PRÉVISUALISATION DU FLYER -->
+        <section class="preview-area">
+            <div class="flyer-card" id="flyerCard">
+                <header class="flyer-header">
+                    <h3 id="outTitle">Merci pour ces Vacances ! 🌴</h3>
+                    <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
+                </header>
+                
+                <div class="media-gallery" id="mediaGallery">
+                    <div class="placeholder-box">Vos photos apparaîtront ici...</div>
+                </div>
+
+                <div class="flyer-body">
+                    <p class="flyer-message" id="outMessage">Un grand MERCI à tous d'avoir rendu ces vacances exceptionnelles ! 
+
+Votre bonne humeur et ces souvenirs partagés resteront gravés. On se retrouve très vite !</p>
+                </div>
+
+                <!-- BANDEAU VIRAL (Affiche le lien de l'app sur l'image) -->
+                <footer class="app-promo-footer">
+                    <div class="promo-content">
+                        <span class="promo-icon">📱</span>
+                        <div class="promo-text">
+                            <strong>Crée toi aussi ta carte de vacances !</strong>
+                            <p>Télécharge l'application sur : <span>mon-app-vacances.com</span></p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(() => console.log('PWA Service Worker actif'))
+                    .catch(err => console.error('Erreur SW:', err));
+            });
+        }
+    </script>
+</body>
+</html>
