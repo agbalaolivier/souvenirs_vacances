@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDownload = document.getElementById('btnDownload');
     const btnShare = document.getElementById('btnShare');
     const flyerCard = document.getElementById('flyerCard');
-    const readModeBanner = document.getElementById('readModeBanner');
 
     // Lightbox
     const imageModal = document.getElementById('imageModal');
@@ -32,26 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPhoto = document.getElementById('nextPhoto');
 
     // -------------------------------------------------------------
-    // 2. GESTION DU MODE LECTURE (SI ACCÈS VIA UN LIEN PARTAGÉ)
-    // -------------------------------------------------------------
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedTitle = urlParams.get('title');
-    const sharedSubtitle = urlParams.get('sub');
-    const sharedMessage = urlParams.get('msg');
-
-    if (sharedTitle || sharedMessage) {
-        // Remplissage des textes partagés
-        if (sharedTitle && outTitle) outTitle.textContent = sharedTitle;
-        if (sharedSubtitle && outSubtitle) outSubtitle.textContent = sharedSubtitle;
-        // Limite également le message partagé à 30 chars par sécurité
-        if (sharedMessage && outMessage) outMessage.textContent = sharedMessage.slice(0, 30);
-
-        // Afficher la bannière d'invitation à créer sa propre carte
-        if (readModeBanner) readModeBanner.style.display = 'flex';
-    }
-
-    // -------------------------------------------------------------
-    // 3. MISE À JOUR SYNCHRONE LORS DE LA SAISIE
+    // 2. MISE À JOUR SYNCHRONE LORS DE LA SAISIE
     // -------------------------------------------------------------
     if (inTitle && outTitle) {
         inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
@@ -61,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
     }
 
-    // Message : tronqué automatiquement à 30 caractères maximum
     if (inMessage && outMessage) {
         inMessage.addEventListener('input', e => {
             outMessage.textContent = e.target.value.slice(0, 30);
@@ -69,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 4. GALERIE PHOTO & LIGHTBOX (STYLE WHATSAPP)
+    // 3. GALERIE PHOTO & LIGHTBOX
     // -------------------------------------------------------------
     function updateLightbox(index) {
         if (loadedPhotos.length === 0) return;
@@ -114,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Clavier pour la lightbox (Flèches & Échap)
     document.addEventListener('keydown', (e) => {
         if (imageModal && imageModal.style.display === 'flex') {
             if (e.key === 'ArrowRight' && nextPhoto) nextPhoto.click();
@@ -159,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 5. GÉNÉRATION CANVAS (html2canvas)
+    // 4. GÉNÉRATION CANVAS (html2canvas)
     // -------------------------------------------------------------
     async function generateCanvas() {
         if (typeof html2canvas === 'undefined') {
@@ -173,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Télécharger la carte
     if (btnDownload) {
         btnDownload.addEventListener('click', async () => {
             const originalText = btnDownload.innerText;
@@ -196,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 6. PARTAGER LA CARTE + GÉNÉRER LE LIEN DYNAMIQUE
+    // 5. PARTAGER LA CARTE (MESSAGE SIMPLE AVEC LIEN DIRECT)
     // -------------------------------------------------------------
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
@@ -205,15 +182,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnShare.innerText = "⏳ Préparation...";
                 btnShare.disabled = true;
 
-                // Construction du lien personnalisé avec les paramètres de la carte
-                const currentTitle = encodeURIComponent(outTitle ? outTitle.textContent : '');
-                const currentSub = encodeURIComponent(outSubtitle ? outSubtitle.textContent : '');
-                const currentMsg = encodeURIComponent(outMessage ? outMessage.textContent : '');
-
-                const interactiveLink = `${APP_LINK}?title=${currentTitle}&sub=${currentSub}&msg=${currentMsg}`;
-
-                // Message épuré : pointeur vers le lien sans la mention "HD"
-                const shareMessage = `🌴 Regarde ma carte souvenir de vacances !\n\n👉 ${interactiveLink}\n\n🎨 Crée toi aussi ta propre carte gratuitement !`;
+                // Lien simple pour que la messagerie génère la carte Open Graph avec le grand logo
+                const shareMessage = APP_LINK;
 
                 const canvas = await generateCanvas();
 
@@ -225,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                         try {
                             await navigator.share({
-                                title: 'Mes Souvenirs de Vacances',
+                                title: 'Crée ta carte de vacances !',
                                 text: shareMessage,
                                 files: [file]
                             });
@@ -234,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else {
                         await navigator.clipboard.writeText(shareMessage);
-                        alert("Le message et le lien ont été copiés ! Collez-les directement dans WhatsApp.");
+                        alert("Le lien d'invitation a été copié ! Collez-le dans votre message.");
                     }
                 }, 'image/png');
 

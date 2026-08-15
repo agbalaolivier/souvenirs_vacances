@@ -10,6 +10,21 @@
     <link rel="apple-touch-icon" href="icons/icon-192.png">
     <link rel="stylesheet" href="style.css">
 
+    <!-- Méta-données Open Graph pour générer l'aperçu grand format (Logo + Lien) sur WhatsApp/Réseaux -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Crée ta propre carte de vacances !">
+    <meta property="og:description" content="Générez une carte souvenir élégante et partagez-la à vos proches en quelques clics.">
+    <meta property="og:url" content="https://agbalaolivier.github.io/souvenirs_vacances/">
+    <meta property="og:image" content="https://agbalaolivier.github.io/souvenirs_vacances/icons/app_logo.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+
+    <!-- Cartes Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Crée ta propre carte de vacances !">
+    <meta name="twitter:description" content="Générez une carte souvenir élégante.">
+    <meta name="twitter:image" content="https://agbalaolivier.github.io/souvenirs_vacances/icons/app_logo.jpg">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -42,9 +57,8 @@
                 </label>
             </div>
 
-            <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX HD) -->
+            <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX) -->
             <div id="imageModal" class="whatsapp-lightbox">
-                <!-- Barre d'outils supérieure -->
                 <div class="lightbox-header">
                     <span class="lightbox-counter" id="modalCounter">1 / 1</span>
                     <div class="lightbox-actions">
@@ -55,7 +69,6 @@
                     </div>
                 </div>
 
-                <!-- Zone d'affichage de la photo -->
                 <div class="lightbox-content-wrapper">
                     <button type="button" id="prevPhoto" class="nav-btn prev-btn">&#10094;</button>
                     <img class="modal-content" id="imgFull" alt="Photo plein écran">
@@ -81,7 +94,6 @@
                 <header class="flyer-header">
                     <div class="title-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
                         <h3 id="outTitle">Merci pour ces Vacances !</h3>
-                        <!-- LOGO STATIQUE (Ajustez le src si votre image est dans un dossier comme assets/logo.png) -->
                         <img src="./icons/app_logo.jpg" alt="Logo" class="static-logo" style="height: 24px; width: auto;">
                     </div>
                     <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
@@ -89,19 +101,14 @@
                 
                 <div class="media-gallery" id="mediaGallery">
                     <div class="placeholder-box">Vos photos apparaîtront ici...</div>
-
-                    
                 </div>
 
-                <!-- MESSAGE RÉDUIT (25-30 CARACTÈRES) -->
                 <div class="flyer-body">
                     <p class="flyer-message" id="outMessage">Des souvenirs gravés !</p>
                 </div>
 
-                <!-- BANDEAU VIRAL -->
                 <footer class="app-promo-footer">
                     <div class="promo-content">
-                        <!-- LOGO STATIQUE EN BAS -->
                         <img src="./icons/app_logo.jpg" alt="Logo" class="promo-icon-img" style="height: 28px; width: auto;">
                         <div class="promo-text">
                             <strong>Crée toi aussi ta carte de vacances !</strong>
@@ -113,7 +120,7 @@
         </section>
     </main>
 
-    <script src="app.js?v=2"></script>
+    <script src="app.js"></script>
 
     <script>
         if ('serviceWorker' in navigator) {
