@@ -175,45 +175,55 @@ document.addEventListener('DOMContentLoaded', () => {
     // -------------------------------------------------------------
     // 5. PARTAGER LA CARTE (MESSAGE SIMPLE AVEC LIEN DIRECT)
     // -------------------------------------------------------------
-    if (btnShare) {
-        btnShare.addEventListener('click', async () => {
-            const originalText = btnShare.innerText;
-            try {
-                btnShare.innerText = "⏳ Préparation...";
-                btnShare.disabled = true;
+    // -------------------------------------------------------------
+// 5. PARTAGER LA CARTE SUR WHATSAPP
+// -------------------------------------------------------------
+if (btnShare) {
+    btnShare.addEventListener('click', async () => {
+        const originalText = btnShare.innerText;
+        try {
+            btnShare.innerText = "⏳ Préparation...";
+            btnShare.disabled = true;
 
-                // Lien simple pour que la messagerie génère la carte Open Graph avec le grand logo
-                const shareMessage = APP_LINK;
+            const shareText = `Crée toi aussi ta carte de vacances sur :\nhttps://agbalaolivier.github.io/souvenirs_vacances/`;
 
-                const canvas = await generateCanvas();
+            const canvas = await generateCanvas();
 
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
+            canvas.toBlob(async (blob) => {
+                if (!blob) return;
 
-                    const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
+                const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
 
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                title: 'Crée ta carte de vacances !',
-                                text: shareMessage,
-                                files: [file]
-                            });
-                        } catch (shareErr) {
-                            if (shareErr.name !== 'AbortError') console.log('Partage annulé');
-                        }
-                    } else {
-                        await navigator.clipboard.writeText(shareMessage);
-                        alert("Le lien d'invitation a été copié ! Collez-le dans votre message.");
+                // Sur Mobile (Android/iOS) : partage la photo ET le texte ensemble
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    try {
+                        await navigator.share({
+                            title: 'Ma carte souvenir',
+                            text: shareText,
+                            files: [file]
+                        });
+                    } catch (shareErr) {
+                        if (shareErr.name !== 'AbortError') console.log('Partage annulé');
                     }
-                }, 'image/png');
+                } else {
+                    // Sur PC / Navigateur sans support complet : copie le lien et télécharge l'image
+                    await navigator.clipboard.writeText(shareText);
+                    
+                    const link = document.createElement('a');
+                    link.download = 'carte-souvenir-vacances.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
 
-            } catch (err) {
-                alert("Impossible de préparer le partage : " + err.message);
-            } finally {
-                btnShare.innerText = originalText;
-                btnShare.disabled = false;
-            }
-        });
-    }
+                    alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier ! Vous pouvez coller le texte dans WhatsApp.");
+                }
+            }, 'image/png');
+
+        } catch (err) {
+            alert("Impossible de préparer le partage : " + err.message);
+        } finally {
+            btnShare.innerText = originalText;
+            btnShare.disabled = false;
+        }
+    });
+}
 });
