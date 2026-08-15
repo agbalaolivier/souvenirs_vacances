@@ -588,35 +588,3 @@ body {
     font-weight: 700;
 }
 
-/* --- BANNIÈRE D'INVITATION À CRÉER SA CARTE (MODE CONSULTATION) --- */
-.read-mode-banner {
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-    background: #0284c7;
-    color: white;
-    padding: 14px 20px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4);
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.btn-create-own {
-    background: #ffffff;
-    color: #0284c7;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: bold;
-    text-decoration: none;
-    transition: transform 0.2s, background 0.2s;
-}
-
-.btn-create-own:hover {
-    transform: scale(1.05);
-    background: #f0f9ff;
-}
