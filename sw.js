@@ -1,43 +1,35 @@
-// 1. Incrémentation de la version pour forcer le remplacement du cache
-const CACHE_NAME = 'souvenirs-v2';
+const CACHE_NAME = 'souvenirs-vacances-dynamic';
 
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './style.css',
-  './app.js',
-  './manifest.json',
-  './icons/app_logo.jpg', // <--- Ajout du logo dans le cache
-  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'
-];
-
-// Installation du Service Worker et mise en cache des fichiers
+// Installation : prend le contrôle immédiatement
 self.addEventListener('install', (event) => {
-  // Active immédiatement le nouveau SW sans attendre la fermeture du navigateur
-  self.skipWaiting(); 
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+  self.skipWaiting();
 });
 
-// Activation et nettoyage des anciens caches
+// Activation : prend le contrôle des pages ouvertes
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    }).then(() => self.clients.claim()) // Prend le contrôle de la page immédiatement
-  );
+  event.waitUntil(clients.claim());
 });
 
-// Interception des requêtes pour fonctionner hors-ligne
+// Stratégie Réseau d'abord : va chercher sur Internet, sinon prend le cache
 self.addEventListener('fetch', (event) => {
+  // Ignorer les requêtes non GET
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request);
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Si le réseau répond, on met à jour le cache silencieusement
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // En cas de panne de réseau (hors-ligne), on utilise le cache local
+        return caches.match(event.request);
+      })
   );
 });
