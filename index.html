@@ -56,6 +56,19 @@
                     <input type="file" id="inMedia" accept="image/*" multiple>
                 </label>
             </div>
+            <div class="form-group">
+    <label>LOCALISATION</label>
+    <div class="geo-input-wrapper">
+        <button type="button" id="btnGeolocate" class="btn-geo">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+            </svg>
+            <span>Ajouter ma position</span>
+        </button>
+        <span id="geoStatus" class="geo-status"></span>
+    </div>
+</div>
+           
 
             <!-- MODALE PLEIN ÉCRAN POUR LES PHOTOS (LIGHTBOX) -->
             <div id="imageModal" class="whatsapp-lightbox">
@@ -92,14 +105,24 @@
         <section class="preview-area">
             <div class="flyer-card" id="flyerCard">
                 <header class="flyer-header">
-                    <div class="title-wrapper" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-                        <h3 id="outTitle">Merci pour ces Vacances !</h3>
-                        <img src="./icons/app_logo.jpg" alt="Logo" class="static-logo" style="height: 24px; width: auto;">
-                    </div>
-                    <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
-                </header>
-                
-                <div class="media-gallery" id="mediaGallery">
+    <!-- LOGO EN POSITION ABSOLUE -->
+    <img src="./icons/app_logo.jpg" alt="Logo" class="static-logo">
+
+    <!-- LOCALISATION (Haut Droite) -->
+    <div id="locationBadge" class="location-badge" style="display: none;">
+        <svg class="location-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
+        </svg>
+        <span id="outLocationText">Chargement...</span>
+    </div>
+
+    <!-- TITRES (Centrés) -->
+    <div class="header-titles">
+        <h3 id="outTitle">Merci pour ces Vacances !</h3>
+        <p id="outSubtitle">Été 2026 • Des moments inoubliables</p>
+    </div>
+</header>
+<div class="media-gallery" id="mediaGallery">
                     <div class="placeholder-box">Vos photos apparaîtront ici...</div>
                 </div>
 

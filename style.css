@@ -20,6 +20,78 @@
     padding: 0; 
     font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
 }
+/* Alignement sur 3 colonnes : Gauche / Centre / Droite */
+
+.flyer-header {
+    position: relative; /* Indispensable pour ancrer le logo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    background: #00939c;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+/* 1. Géolocalisation (Calée à gauche) */
+.location-badge {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.4);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.location-badge .location-icon {
+    fill: #38bdf8;
+    transform: rotate(-45deg);
+}
+
+/* 2. Bloc central des titres */
+
+.header-titles {
+    text-align: center;
+    margin-top: 10px;
+}
+
+
+.header-titles h3#outTitle {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+
+.header-titles p#outSubtitle {
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.78rem;
+    margin-top: 4px;
+}
+
+/* 3. Logo (Calé à droite) */
+.header-logo-wrapper {
+    justify-self: end;
+}
+
+
+.static-logo {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    height: 36px;
+    width: 36px;
+    border-radius: 8px;
+    object-fit: cover;
+    z-index: 10;
+}
 
 body {
     background-color: var(--bg-dark);
@@ -586,5 +658,67 @@ body {
     color: #f59e0b;
     text-decoration: underline;
     font-weight: 700;
+}
+/* Badge de géolocalisation sur la carte */
+.location-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    backdrop-filter: blur(4px);
+    margin: 8px auto;
+}
+
+.geo-status {
+    display: block;
+    font-size: 0.8rem;
+    margin-top: 4px;
+    color: #94a3b8;
+}
+/* Container de géolocalisation dans le panneau d'édition */
+.geo-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Bouton stylisé comme les inputs sombres */
+.btn-geo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    background: #0f172a; /* Même fond sombre que vos champs text */
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-geo:hover {
+    background: #1e293b;
+    border-color: #3b82f6;
+}
+
+.btn-geo svg {
+    fill: #38bdf8;
+    transform: rotate(-45deg);
+}
+
+/* Texte de statut sous le bouton */
+.geo-status {
+    font-size: 0.8rem;
+    color: #38bdf8;
+    padding-left: 4px;
 }
 

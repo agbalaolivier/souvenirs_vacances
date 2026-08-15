@@ -172,10 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // -------------------------------------------------------------
-    // 5. PARTAGER LA CARTE (MESSAGE SIMPLE AVEC LIEN DIRECT)
-    // -------------------------------------------------------------
-    // -------------------------------------------------------------
 // 5. PARTAGER LA CARTE SUR WHATSAPP
 // -------------------------------------------------------------
 if (btnShare) {
@@ -224,6 +220,59 @@ if (btnShare) {
             btnShare.innerText = originalText;
             btnShare.disabled = false;
         }
+    });
+}
+// -------------------------------------------------------------
+// GÉOLOCALISATION ET DÉTECTION DE LA VILLE
+// -------------------------------------------------------------
+const btnGeolocate = document.getElementById('btnGeolocate');
+const geoStatus = document.getElementById('geoStatus');
+const locationBadge = document.getElementById('locationBadge');
+const outLocationText = document.getElementById('outLocationText');
+
+if (btnGeolocate) {
+    btnGeolocate.addEventListener('click', () => {
+        if (!navigator.geolocation) {
+            alert("La géolocalisation n'est pas supportée par votre navigateur.");
+            return;
+        }
+
+        geoStatus.textContent = "⏳ Recherche de la position...";
+
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+
+                try {
+                    // Reverse Geocoding via l'API OpenStreetMap Nominatim
+                    const response = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+                    );
+                    const data = await response.json();
+
+                    // Extraire le nom de la ville ou du village
+                    const city = data.address.city || data.address.town || data.address.village || data.address.state || "Position détectée";
+                    const country = data.address.country || "";
+
+                    const locationString = `${city}, ${country}`;
+
+                    // Affichage dans le badge sur la carte
+                    if (outLocationText) outLocationText.textContent = locationString;
+                    if (locationBadge) locationBadge.style.display = 'inline-flex';
+                    
+                    geoStatus.textContent = `📍 ${locationString}`;
+
+                } catch (err) {
+                    geoStatus.textContent = "❌ Impossible de récupérer la ville.";
+                    console.error(err);
+                }
+            },
+            (error) => {
+                geoStatus.textContent = "⚠️ Accès à la position refusé.";
+            },
+            { enableHighAccuracy: true, timeout: 10000 }
+        );
     });
 }
 });
