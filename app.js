@@ -212,7 +212,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const interactiveLink = `${APP_LINK}?title=${currentTitle}&sub=${currentSub}&msg=${currentMsg}`;
 
-                const shareMessage = `🌴 Regarde ma carte souvenir de vacances !\n\n✨ Découvre les photos en HD et défile l'album ici :\n👉 ${interactiveLink}\n\n🎨 Crée toi aussi ta propre carte gratuitement !`;
+                // Message épuré : pointeur vers le lien sans la mention "HD"
+                const shareMessage = `🌴 Regarde ma carte souvenir de vacances !\n\n👉 ${interactiveLink}\n\n🎨 Crée toi aussi ta propre carte gratuitement !`;
 
                 const canvas = await generateCanvas();
 
@@ -233,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     } else {
                         await navigator.clipboard.writeText(shareMessage);
-                        alert("Le message et le lien interactif ont été copiés ! Collez-les directement dans WhatsApp.");
+                        alert("Le message et le lien ont été copiés ! Collez-les directement dans WhatsApp.");
                     }
                 }, 'image/png');
 
