@@ -20,8 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnShare = document.getElementById('btnShare');
     const flyerCard = document.getElementById('flyerCard');
 
-    // Éléments du sous-titre et de la date (Déclarés une seule fois)
+    // Éléments du sous-titre, des saisons et de la date
     const periodSelect = document.getElementById('periodSelect');
+    const yearSelect = document.getElementById('yearSelect');
     const customDatePicker = document.getElementById('customDatePicker');
     const inSubtitleText = document.getElementById('inSubtitleText');
 
@@ -35,27 +36,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextPhoto = document.getElementById('nextPhoto');
 
     // -------------------------------------------------------------
-    // 2. MISE À JOUR SYNCHRONE LORS DE LA SAISIE
+    // 2. GÉNÉRATION DES 10 DERNIÈRES ANNÉES & GESTION DU SOUS-TITRE
     // -------------------------------------------------------------
-    if (inTitle && outTitle) {
-        inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
+    if (yearSelect) {
+        const currentYear = new Date().getFullYear();
+        yearSelect.innerHTML = '';
+        for (let i = 0; i <= 10; i++) {
+            const yearOption = document.createElement('option');
+            const yearValue = currentYear - i;
+            yearOption.value = yearValue;
+            yearOption.textContent = yearValue;
+            yearSelect.appendChild(yearOption);
+        }
     }
 
-    if (inMessage && outMessage) {
-        inMessage.addEventListener('input', e => {
-            outMessage.textContent = e.target.value.slice(0, 30);
-        });
-    }
-
-    // Fonction de gestion dynamique du sous-titre et des dates
     function updateSubtitle() {
         if (!periodSelect || !outSubtitle) return;
 
         let selectedPeriod = periodSelect.value;
 
+        if (yearSelect) yearSelect.style.display = 'none';
+        if (customDatePicker) customDatePicker.style.display = 'none';
+
         // 1. Cas "Aujourd'hui"
         if (selectedPeriod === 'today') {
-            if (customDatePicker) customDatePicker.style.display = 'none';
             const today = new Date();
             selectedPeriod = today.toLocaleDateString('fr-FR', {
                 day: 'numeric',
@@ -79,14 +83,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         } 
-        // 3. Cas des saisons
+        // 3. Cas des Saisons (Affiche le menu de choix de l'année)
         else {
-            if (customDatePicker) customDatePicker.style.display = 'none';
+            if (yearSelect) {
+                yearSelect.style.display = 'block';
+                const selectedYear = yearSelect.value;
+                selectedPeriod = `${selectedPeriod} ${selectedYear}`;
+            }
         }
 
         const customText = inSubtitleText ? inSubtitleText.value.trim() : '';
         
-        // Assemblage final sur la carte
         if (customText) {
             outSubtitle.textContent = `${selectedPeriod} • ${customText}`;
         } else {
@@ -96,14 +103,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Écouteurs pour le sous-titre
     if (periodSelect) periodSelect.addEventListener('change', updateSubtitle);
+    if (yearSelect) yearSelect.addEventListener('change', updateSubtitle);
     if (customDatePicker) customDatePicker.addEventListener('change', updateSubtitle);
     if (inSubtitleText) inSubtitleText.addEventListener('input', updateSubtitle);
 
-    // Initialisation du sous-titre au chargement
+    // Initialisation
     updateSubtitle();
 
     // -------------------------------------------------------------
-    // 3. GALERIE PHOTO & LIGHTBOX
+    // 3. MISE À JOUR SYNCHRONE DES AUTRES CHAMPS
+    // -------------------------------------------------------------
+    if (inTitle && outTitle) {
+        inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
+    }
+
+    if (inMessage && outMessage) {
+        inMessage.addEventListener('input', e => {
+            outMessage.textContent = e.target.value.slice(0, 30);
+        });
+    }
+
+    // -------------------------------------------------------------
+    // 4. GALERIE PHOTO & LIGHTBOX
     // -------------------------------------------------------------
     function updateLightbox(index) {
         if (loadedPhotos.length === 0) return;
@@ -192,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 4. GÉNÉRATION CANVAS (html2canvas)
+    // 5. GÉNÉRATION CANVAS (html2canvas)
     // -------------------------------------------------------------
     async function generateCanvas() {
         if (typeof html2canvas === 'undefined') {
@@ -228,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 5. PARTAGER LA CARTE SUR WHATSAPP
+    // 6. PARTAGER LA CARTE
     // -------------------------------------------------------------
     if (btnShare) {
         btnShare.addEventListener('click', async () => {
@@ -263,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         link.href = canvas.toDataURL('image/png');
                         link.click();
 
-                        alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier ! Vous pouvez coller le texte dans WhatsApp.");
+                        alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier !");
                     }
                 }, 'image/png');
 
@@ -277,7 +298,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // -------------------------------------------------------------
-    // 6. GÉOLOCALISATION ET DÉTECTION DE LA VILLE
+    // 7. GÉOLOCALISATION
     // -------------------------------------------------------------
     const btnGeolocate = document.getElementById('btnGeolocate');
     const geoStatus = document.getElementById('geoStatus');

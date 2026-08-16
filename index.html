@@ -51,12 +51,15 @@
         <!-- Sélection de la période ou saison -->
         <select id="periodSelect" class="form-input">
             <option value="today">Aujourd'hui</option>
-            <option value="Été 2026">Été 2026</option>
-            <option value="Hiver 2026">Hiver 2026</option>
-            <option value="Printemps 2026">Printemps 2026</option>
-            <option value="Automne 2026">Automne 2026</option>
+            <option value="Été">Été</option>
+            <option value="Hiver">Hiver</option>
+            <option value="Printemps">Printemps</option>
+            <option value="Automne">Automne</option>
             <option value="customDate">Date précise...</option>
         </select>
+
+        <!-- Sélecteur d'année (Généré dynamiquement en JS sur 10 ans en arrière) -->
+        <select id="yearSelect" class="form-input" style="display: none;"></select>
         
         <!-- Input de date si l'utilisateur choisit "Date précise" (masqué par défaut) -->
         <input type="date" id="customDatePicker" class="form-input" style="display: none;">
