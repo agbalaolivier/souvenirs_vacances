@@ -107,14 +107,27 @@
                 <header class="flyer-header">
     <!-- LOGO EN POSITION ABSOLUE -->
     <img src="./icons/app_logo.jpg" alt="Logo" class="static-logo">
-
-    <!-- LOCALISATION (Haut Droite) -->
-    <div id="locationBadge" class="location-badge" style="display: none;">
-        <svg class="location-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-            <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/>
-        </svg>
-        <span id="outLocationText">Chargement...</span>
+    <!-- LOCALISATION STYLE CARTE POSTALE -->
+<div id="locationBadge" class="location-badge" style="display: none;">
+    <div class="location-handwritten">
+        <span class="greeting-text">coucou, je suis ici !</span>
+        <!-- Pin de Géolocalisation dessiné en SVG -->
+         <svg class="curved-arrow" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Contour du Pin de Géolocalisation -->
+    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"></path>
+    <!-- Point central -->
+    <circle cx="12" cy="9" r="2.5" fill="currentColor"></circle>
+</svg>
+         
+        
+         
+         
+       
     </div>
+    <span id="outLocationText" class="city-name">Chargement...</span>
+</div>
+
+   
 
     <!-- TITRES (Centrés) -->
     <div class="header-titles">

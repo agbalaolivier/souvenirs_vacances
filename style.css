@@ -251,15 +251,20 @@ img, svg {
 }
 
 .flyer-header {
+    
+
     background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
-    padding: 20px 16px;
+    padding: 16px;
     text-align: center;
     color: #ffffff;
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    gap: 8px; /* Espace propre entre le titre, le sous-titre et le badge */
 }
+
 
 .static-logo {
     position: absolute;
@@ -294,18 +299,63 @@ img, svg {
 }
 
 .location-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 2px;
     background: rgba(15, 23, 42, 0.5);
     color: #ffffff;
     padding: 4px 10px;
     border-radius: 16px;
     font-size: 0.7rem;
     backdrop-filter: blur(4px);
+
+    
+    flex-direction: column;
+    gap: 2px;
+    z-index: 10;
+
+    position: relative; /* On retire le position: absolute qui faisait chevaucher */
+    top: auto;
+    right: auto;
+    align-items: center; /* Centré proprement sous le sous-titre */
+    margin-top: 4px;
+}
+.curved-arrow {
+    stroke: #fcd34d;
+    color: #fcd34d; /* Colore le point central */
+    margin-left: 2px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Texte "coucou je suis ici" */
+.location-handwritten {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #fcd34d; /* Jaune chaleureux */
+    font-size: 0.72rem;
+    font-weight: 700;
+    font-style: italic;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* Nom de la ville bien mis en valeur */
+.city-name {
+    background: rgba(15, 23, 42, 0.75);
+    color: #ffffff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+/* Petit rebond discret sur la flèche pour donner du peps sur l'écran */
+@keyframes point-bounce {
+    0%, 100% { transform: translate(0, 0) rotate(10deg); }
+    50% { transform: translate(2px, 2px) rotate(10deg); }
 }
 
 .location-badge .location-icon {
@@ -396,7 +446,7 @@ img, svg {
     color: #94a3b8;
 }
 .promo-text p span {
-    color: #f59e0b; /* Jaune / Orange vif */
+    color: #fcd34d;
     font-weight: 700;
     text-decoration: underline; /* Optionnel : pour souligner le lien */
 }
