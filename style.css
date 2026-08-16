@@ -314,14 +314,15 @@ img, svg {
 }
 
 .media-gallery {
-    padding: 10px;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    min-height: 200px;
-    max-height: 360px;
-    overflow-y: auto;
+    grid-template-columns: repeat(2, 1fr); /* Grille à 2 colonnes propre */
+    gap: 10px;
+    padding: 12px;
     background: #f8fafc;
+    width: 100%;
+    /* On évite overflow-y: auto pour la capture d'image */
+    
+
 }
 
 .placeholder-box {
@@ -337,12 +338,18 @@ img, svg {
     font-size: 0.85rem;
     background: #ffffff;
 }
+/* Si l'utilisateur n'importe qu'UNE SEULE photo, elle prend toute la largeur */
+.media-gallery:has(.media-item:only-child) .media-item {
+    grid-column: 1 / -1;
+    height: 220px;
+}
 
 .media-item {
     width: 100%;
-    height: 130px;
+    height: 140px;
     object-fit: cover;
     border-radius: 12px;
+    object-position: center;
 }
 
 .flyer-body {
