@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. SÉLECTION DES ÉLÉMENTS DU DOM
     // -------------------------------------------------------------
     const inTitle = document.getElementById('inTitle');
-    const inSubtitle = document.getElementById('inSubtitle');
     const inMessage = document.getElementById('inMessage');
     const inMedia = document.getElementById('inMedia');
 
@@ -20,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnDownload = document.getElementById('btnDownload');
     const btnShare = document.getElementById('btnShare');
     const flyerCard = document.getElementById('flyerCard');
+
+    // Éléments du sous-titre et de la date (Déclarés une seule fois)
+    const periodSelect = document.getElementById('periodSelect');
+    const customDatePicker = document.getElementById('customDatePicker');
+    const inSubtitleText = document.getElementById('inSubtitleText');
 
     // Lightbox
     const imageModal = document.getElementById('imageModal');
@@ -36,16 +40,67 @@ document.addEventListener('DOMContentLoaded', () => {
     if (inTitle && outTitle) {
         inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
     }
-    
-    if (inSubtitle && outSubtitle) {
-        inSubtitle.addEventListener('input', e => outSubtitle.textContent = e.target.value);
-    }
 
     if (inMessage && outMessage) {
         inMessage.addEventListener('input', e => {
             outMessage.textContent = e.target.value.slice(0, 30);
         });
     }
+
+    // Fonction de gestion dynamique du sous-titre et des dates
+    function updateSubtitle() {
+        if (!periodSelect || !outSubtitle) return;
+
+        let selectedPeriod = periodSelect.value;
+
+        // 1. Cas "Aujourd'hui"
+        if (selectedPeriod === 'today') {
+            if (customDatePicker) customDatePicker.style.display = 'none';
+            const today = new Date();
+            selectedPeriod = today.toLocaleDateString('fr-FR', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+        } 
+        // 2. Cas "Date précise"
+        else if (selectedPeriod === 'customDate') {
+            if (customDatePicker) {
+                customDatePicker.style.display = 'block';
+                if (customDatePicker.value) {
+                    const dateObj = new Date(customDatePicker.value);
+                    selectedPeriod = dateObj.toLocaleDateString('fr-FR', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                } else {
+                    selectedPeriod = 'Date';
+                }
+            }
+        } 
+        // 3. Cas des saisons
+        else {
+            if (customDatePicker) customDatePicker.style.display = 'none';
+        }
+
+        const customText = inSubtitleText ? inSubtitleText.value.trim() : '';
+        
+        // Assemblage final sur la carte
+        if (customText) {
+            outSubtitle.textContent = `${selectedPeriod} • ${customText}`;
+        } else {
+            outSubtitle.textContent = selectedPeriod;
+        }
+    }
+
+    // Écouteurs pour le sous-titre
+    if (periodSelect) periodSelect.addEventListener('change', updateSubtitle);
+    if (customDatePicker) customDatePicker.addEventListener('change', updateSubtitle);
+    if (inSubtitleText) inSubtitleText.addEventListener('input', updateSubtitle);
+
+    // Initialisation du sous-titre au chargement
+    updateSubtitle();
 
     // -------------------------------------------------------------
     // 3. GALERIE PHOTO & LIGHTBOX
@@ -172,107 +227,103 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-// 5. PARTAGER LA CARTE SUR WHATSAPP
-// -------------------------------------------------------------
-if (btnShare) {
-    btnShare.addEventListener('click', async () => {
-        const originalText = btnShare.innerText;
-        try {
-            btnShare.innerText = "⏳ Préparation...";
-            btnShare.disabled = true;
+    // -------------------------------------------------------------
+    // 5. PARTAGER LA CARTE SUR WHATSAPP
+    // -------------------------------------------------------------
+    if (btnShare) {
+        btnShare.addEventListener('click', async () => {
+            const originalText = btnShare.innerText;
+            try {
+                btnShare.innerText = "⏳ Préparation...";
+                btnShare.disabled = true;
 
-            const shareText = `Crée toi aussi ta carte de vacances sur :\nhttps://agbalaolivier.github.io/souvenirs_vacances/`;
+                const shareText = `Crée toi aussi ta carte de vacances sur :\n${APP_LINK}`;
+                const canvas = await generateCanvas();
 
-            const canvas = await generateCanvas();
+                canvas.toBlob(async (blob) => {
+                    if (!blob) return;
 
-            canvas.toBlob(async (blob) => {
-                if (!blob) return;
+                    const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
 
-                const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                title: 'Ma carte souvenir',
+                                text: shareText,
+                                files: [file]
+                            });
+                        } catch (shareErr) {
+                            if (shareErr.name !== 'AbortError') console.log('Partage annulé');
+                        }
+                    } else {
+                        await navigator.clipboard.writeText(shareText);
+                        
+                        const link = document.createElement('a');
+                        link.download = 'carte-souvenir-vacances.png';
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
 
-                // Sur Mobile (Android/iOS) : partage la photo ET le texte ensemble
-                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                    try {
-                        await navigator.share({
-                            title: 'Ma carte souvenir',
-                            text: shareText,
-                            files: [file]
-                        });
-                    } catch (shareErr) {
-                        if (shareErr.name !== 'AbortError') console.log('Partage annulé');
+                        alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier ! Vous pouvez coller le texte dans WhatsApp.");
                     }
-                } else {
-                    // Sur PC / Navigateur sans support complet : copie le lien et télécharge l'image
-                    await navigator.clipboard.writeText(shareText);
-                    
-                    const link = document.createElement('a');
-                    link.download = 'carte-souvenir-vacances.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                }, 'image/png');
 
-                    alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier ! Vous pouvez coller le texte dans WhatsApp.");
-                }
-            }, 'image/png');
+            } catch (err) {
+                alert("Impossible de préparer le partage : " + err.message);
+            } finally {
+                btnShare.innerText = originalText;
+                btnShare.disabled = false;
+            }
+        });
+    }
 
-        } catch (err) {
-            alert("Impossible de préparer le partage : " + err.message);
-        } finally {
-            btnShare.innerText = originalText;
-            btnShare.disabled = false;
-        }
-    });
-}
-// -------------------------------------------------------------
-// GÉOLOCALISATION ET DÉTECTION DE LA VILLE
-// -------------------------------------------------------------
-const btnGeolocate = document.getElementById('btnGeolocate');
-const geoStatus = document.getElementById('geoStatus');
-const locationBadge = document.getElementById('locationBadge');
-const outLocationText = document.getElementById('outLocationText');
+    // -------------------------------------------------------------
+    // 6. GÉOLOCALISATION ET DÉTECTION DE LA VILLE
+    // -------------------------------------------------------------
+    const btnGeolocate = document.getElementById('btnGeolocate');
+    const geoStatus = document.getElementById('geoStatus');
+    const locationBadge = document.getElementById('locationBadge');
+    const outLocationText = document.getElementById('outLocationText');
 
-if (btnGeolocate) {
-    btnGeolocate.addEventListener('click', () => {
-        if (!navigator.geolocation) {
-            alert("La géolocalisation n'est pas supportée par votre navigateur.");
-            return;
-        }
+    if (btnGeolocate) {
+        btnGeolocate.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                alert("La géolocalisation n'est pas supportée par votre navigateur.");
+                return;
+            }
 
-        geoStatus.textContent = "⏳ Recherche de la position...";
+            geoStatus.textContent = "⏳ Recherche de la position...";
 
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
 
-                try {
-                    // Reverse Geocoding via l'API OpenStreetMap Nominatim
-                    const response = await fetch(
-                        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-                    );
-                    const data = await response.json();
+                    try {
+                        const response = await fetch(
+                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
+                        );
+                        const data = await response.json();
 
-                    // Extraire le nom de la ville ou du village
-                    const city = data.address.city || data.address.town || data.address.village || data.address.state || "Position détectée";
-                    const country = data.address.country || "";
+                        const city = data.address.city || data.address.town || data.address.village || data.address.state || "Position détectée";
+                        const country = data.address.country || "";
 
-                    const locationString = `${city}, ${country}`;
+                        const locationString = `${city}, ${country}`;
 
-                    // Affichage dans le badge sur la carte
-                    if (outLocationText) outLocationText.textContent = locationString;
-                    if (locationBadge) locationBadge.style.display = 'inline-flex';
-                    
-                    geoStatus.textContent = `📍 ${locationString}`;
+                        if (outLocationText) outLocationText.textContent = locationString;
+                        if (locationBadge) locationBadge.style.display = 'inline-flex';
+                        
+                        geoStatus.textContent = `📍 ${locationString}`;
 
-                } catch (err) {
-                    geoStatus.textContent = "❌ Impossible de récupérer la ville.";
-                    console.error(err);
-                }
-            },
-            (error) => {
-                geoStatus.textContent = "⚠️ Accès à la position refusé.";
-            },
-            { enableHighAccuracy: true, timeout: 10000 }
-        );
-    });
-}
+                    } catch (err) {
+                        geoStatus.textContent = "❌ Impossible de récupérer la ville.";
+                        console.error(err);
+                    }
+                },
+                (error) => {
+                    geoStatus.textContent = "⚠️ Accès à la position refusé.";
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        });
+    }
 });
