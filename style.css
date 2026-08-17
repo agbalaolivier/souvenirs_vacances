@@ -13,7 +13,7 @@
 html, body {
     width: 100%;
     max-width: 100%;
-    overflow-x: hidden; /* Bloque le glissement horizontal */
+    overflow-x: hidden;
 }
 
 :root {
@@ -21,6 +21,13 @@ html, body {
     --primary-gradient: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
     --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
     --bg-dark: #090d16;
+    
+    /* Couleurs unifiées pour la carte */
+    --card-dark-unified: #0b1329; /* Noir/Sombre unifié */
+    --card-light-unified: #ffffff; /* Blanc pur unifié */
+    --text-dark-unified: #0b1329;
+    --text-light-unified: #ffffff;
+    
     --card-bg: rgba(255, 255, 255, 0.05);
     --card-border: rgba(255, 255, 255, 0.12);
     --text-main: #f8fafc;
@@ -143,17 +150,16 @@ img, svg {
     border-color: #38bdf8;
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
 }
+
 .subtitle-inputs-grid {
     display: flex;
     gap: 8px;
-
-    
 }
 
 .subtitle-inputs-grid select,
 .subtitle-inputs-grid input {
     flex: 1;
-     width: 100%;
+    width: 100%;
     background: rgba(2, 6, 23, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
@@ -162,8 +168,6 @@ img, svg {
     font-size: 0.9rem;
     outline: none;
 }
-
-
 
 /* Géolocalisation */
 .geo-input-wrapper {
@@ -179,7 +183,7 @@ img, svg {
     gap: 8px;
     width: 100%;
     padding: 12px;
-    background: #0f172a;
+    background: var(--card-dark-unified);
     border: 1px solid #1e293b;
     border-radius: 12px;
     color: #e2e8f0;
@@ -245,8 +249,8 @@ img, svg {
     gap: 8px;
 }
 
-.btn-download { background: #f8fafc; color: #0f172a; }
-.btn-share { background: var(--accent-gradient); color: #ffffff; }
+.btn-download { background: #f8fafc; color: var(--card-dark-unified); }
+.btn-share { background: var(--accent-gradient); color: var(--text-light-unified); }
 
 /* ==========================================
    4. CARTE / FLYER SOUVENIR
@@ -255,46 +259,55 @@ img, svg {
     display: flex;
     justify-content: center;
     width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 .flyer-card {
-    width: 100%;
+    width: 100% !important;
     max-width: 400px;
-    background: #ffffff;
-    border-radius: 20px;
-    overflow: hidden;
+    background: var(--card-light-unified) !important;
+    border-radius: 20px !important;
+    overflow: hidden !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    color: #0f172a;
+    color: var(--text-dark-unified);
     display: flex;
     flex-direction: column;
     position: relative;
-    border: 1px solid var(--card-border);
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
 }
 
 .flyer-header {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
     border-top-left-radius: 20px !important;
     border-top-right-radius: 20px !important;
-    background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
-    padding: 16px;
+    background: url('icons/fond-bleu1.jpg') center/cover no-repeat !important;
     text-align: center;
-    color: #ffffff;
+    color: var(--text-light-unified);
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px; /* Espace propre entre le titre, le sous-titre et le badge */
+    gap: 8px;
 }
-
 
 .static-logo {
     position: absolute;
     top: 12px;
     left: 12px;
-    height: 32px;
-    width: 32px;
-    border-radius: 6px;
-    object-fit: cover;
+    height: 36px !important;
+    width: 36px !important;
+    border-radius: 30% !important;
+    object-fit: cover !important;
+    background-color: var(--card-light-unified);
+    padding: 2px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .header-titles {
@@ -303,7 +316,7 @@ img, svg {
 }
 
 .header-titles h3#outTitle {
-    color: #ffffff;
+    color: var(--text-light-unified);
     font-size: 1.15rem;
     font-weight: 800;
     margin: 0;
@@ -313,7 +326,7 @@ img, svg {
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.75rem;
     margin-top: 4px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(177, 158, 158, 0.2);
     padding: 3px 10px;
     border-radius: 12px;
     display: inline-block;
@@ -322,49 +335,43 @@ img, svg {
 .location-badge {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    background: rgba(15, 23, 42, 0.5);
-    color: #ffffff;
+    background: rgba(85, 90, 104, 0.5);
+    color: var(--text-light-unified);
     padding: 4px 10px;
     border-radius: 16px;
     font-size: 0.7rem;
     backdrop-filter: blur(4px);
-
-    
     flex-direction: column;
     gap: 2px;
     z-index: 10;
-
-    position: relative; /* On retire le position: absolute qui faisait chevaucher */
+    position: relative;
     top: auto;
     right: auto;
-    align-items: center; /* Centré proprement sous le sous-titre */
     margin-top: 4px;
 }
+
 .curved-arrow {
-    stroke: #fcd34d;
-    color: #fcd34d; /* Colore le point central */
+    stroke: var(--text-light-unified);
+    color: var(--text-light-unified);
     margin-left: 2px;
     display: inline-block;
     vertical-align: middle;
 }
 
-/* Texte "coucou je suis ici" */
 .location-handwritten {
     display: flex;
     align-items: center;
     gap: 4px;
-    color: #fcd34d; /* Jaune chaleureux */
+    color: var(--text-light-unified);
     font-size: 0.72rem;
     font-weight: 700;
     font-style: italic;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-/* Nom de la ville bien mis en valeur */
 .city-name {
-    background: rgba(15, 23, 42, 0.75);
-    color: #ffffff;
+    background: rgba(71, 78, 96, 0.85);
+    color: var(--text-light-unified);
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.78rem;
@@ -373,7 +380,7 @@ img, svg {
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
-/* Petit rebond discret sur la flèche pour donner du peps sur l'écran */
+
 @keyframes point-bounce {
     0%, 100% { transform: translate(0, 0) rotate(10deg); }
     50% { transform: translate(2px, 2px) rotate(10deg); }
@@ -386,14 +393,11 @@ img, svg {
 
 .media-gallery {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Grille à 2 colonnes propre */
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     padding: 12px;
-    background: #f8fafc;
+    background: var(--card-light-unified) !important;
     width: 100%;
-    /* On évite overflow-y: auto pour la capture d'image */
-    
-
 }
 
 .placeholder-box {
@@ -407,31 +411,23 @@ img, svg {
     color: #94a3b8;
     font-weight: 600;
     font-size: 0.85rem;
-    background: #ffffff;
+    background: var(--card-light-unified);
 }
-/* Si l'utilisateur n'importe qu'UNE SEULE photo, elle prend toute la largeur */
+
 .media-gallery:has(.media-item:only-child) .media-item {
     grid-column: 1 / -1;
     height: 220px;
 }
 
-.media-item {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 12px;
-    object-position: center;
-}
-
 .flyer-body {
-    padding: 20px 16px;
     text-align: center;
-    background: #ffffff;
+    background: var(--card-light-unified) !important;
+    padding: 15px !important;
 }
 
 .flyer-message {
     font-size: 0.95rem;
-    color: #1e293b;
+    color: var(--text-dark-unified);
     font-weight: 700;
 }
 
@@ -439,9 +435,12 @@ img, svg {
    5. FOOTER DE LA CARTE
    ========================================== */
 .app-promo-footer {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-    color: white;
-    padding: 12px 16px;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 12px 16px !important;
+    box-sizing: border-box !important;
+    background: url('icons/fond-bleu1.jpg') center/cover no-repeat !important;
+    color: var(--text-light-unified);
     border-bottom-left-radius: 20px !important;
     border-bottom-right-radius: 20px !important;
 }
@@ -452,26 +451,34 @@ img, svg {
     gap: 10px;
 }
 
+/* Harmonisation exacte du logo footer avec le logo header */
+.app-promo-footer img,
 .promo-logo {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+    width: 36px !important;       
+    height: 36px !important;
+    border-radius: 30% !important;  
+    object-fit: cover !important;
+    background-color: var(--card-light-unified);    
+    padding: 2px;                  
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); 
 }
 
 .promo-text strong {
     display: block;
     font-size: 0.78rem;
-    color: #38bdf8;
+    color: var(--text-light-unified);
 }
 
 .promo-text p {
     font-size: 0.7rem;
-    color: #94a3b8;
+    color: var(--text-light-unified);
 }
+
+/* Couleur du lien conservée intacte */
 .promo-text p span {
-    color: #fcd34d;
+    color: #63130f;
     font-weight: 700;
-    text-decoration: underline; /* Optionnel : pour souligner le lien */
+    text-decoration: underline;
 }
 
 /* ==========================================
@@ -488,28 +495,24 @@ img, svg {
     justify-content: space-between;
 }
 
-
 /* =============================================================
-   EFFET 3D POLAROID & IMPRESSION (SÉCURISÉ)
+   EFFET 3D POLAROID & IMPRESSION
    ============================================================= */
 
-/* 1. Donner du relief à la carte globale */
 #flyerCard {
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
-    border-radius: 16px !important;
-    overflow: visible !important; /* Permet aux photos de dépasser sans être coupées */
+    border-radius: 20px !important;
+    overflow: hidden !important; /* Maintient l'anti-décalage sur les bords */
 }
 
-/* 2. Style Polaroid / Photo physique */
 .media-item {
-    background: #ffffff !important;
-    padding: 6px 6px 20px 6px !important; /* Cadre blanc type Polaroid */
+    background: var(--card-light-unified) !important;
+    padding: 6px 6px 20px 6px !important;
     border-radius: 4px !important;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.1) !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease !important;
 }
 
-/* 3. Inclinaison naturelle des photos (Effet pêle-mêle) */
 .media-item:nth-child(1) {
     transform: rotate(-4deg) translateY(-2px);
 }
@@ -523,12 +526,8 @@ img, svg {
     transform: rotate(-2deg) translateY(-2px);
 }
 
-/* 4. Effet d'interaction au survol */
 .media-item:hover {
     transform: scale(1.12) rotate(0deg) translateY(-10px) !important;
     z-index: 10 !important;
     box-shadow: 0 18px 30px rgba(0, 0, 0, 0.3) !important;
 }
-
-
-
