@@ -509,7 +509,89 @@ img, svg {
     justify-content: space-between;
     z-index: 99999 !important; /* Passe au-dessus de la carte et du reste */
     align-items: center;
+
+    padding: 20px !important;
+    box-sizing: border-box !important;
 }
+
+/* En-tête de la modale */
+.lightbox-header {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ffffff;
+    z-index: 10;
+}
+
+.lightbox-counter {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.lightbox-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.lightbox-btn {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 1.8rem;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+}
+
+/* Zone d'affichage de la photo */
+.lightbox-content-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: calc(100vh - 120px);
+}
+
+.modal-content {
+    max-width: 90vw !important;
+    max-height: 80vh !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    border-radius: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+/* Boutons Précédent / Suivant */
+.nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: none;
+    font-size: 1.8rem;
+    width: 48px;
+    height: 48px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+    z-index: 10;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.prev-btn { left: 10px; }
+.next-btn { right: 10px; }
 
 
 /* =============================================================
