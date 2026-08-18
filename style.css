@@ -262,6 +262,9 @@ img, svg {
     padding: 0 !important;
     margin: 0 !important;
 }
+.preview-area, #flyerCard, .flyer-card {
+    z-index: 10 !important;
+}
 
 .flyer-card {
     width: 100% !important;
@@ -278,6 +281,9 @@ img, svg {
     padding: 0 !important;
     margin: 0 auto !important;
 }
+#flyerCard, .flyer-card {
+    overflow: visible !important;
+}
 
 .flyer-header {
     width: 100% !important;
@@ -286,7 +292,7 @@ img, svg {
     box-sizing: border-box !important;
     border-top-left-radius: 20px !important;
     border-top-right-radius: 20px !important;
-    background: url('icons/fond-bleu1.jpg') center/cover no-repeat !important;
+    background: url('icons/base_corfu_greece_03.avif') center/cover no-repeat !important;
     text-align: center;
     color: var(--text-light-unified);
     position: relative;
@@ -295,7 +301,11 @@ img, svg {
     align-items: center;
     justify-content: center;
     gap: 8px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
 }
+
+
 
 .static-logo {
     position: absolute;
@@ -333,14 +343,10 @@ img, svg {
 }
 
 .location-badge {
-    display: inline-flex;
     align-items: center;
-    background: rgba(85, 90, 104, 0.5);
     color: var(--text-light-unified);
-    padding: 4px 10px;
     border-radius: 16px;
     font-size: 0.7rem;
-    backdrop-filter: blur(4px);
     flex-direction: column;
     gap: 2px;
     z-index: 10;
@@ -348,6 +354,11 @@ img, svg {
     top: auto;
     right: auto;
     margin-top: 4px;
+
+    background: transparent; 
+    backdrop-filter: none ;
+    padding: 0 ;
+    display: flex;
 }
 
 .curved-arrow {
@@ -370,15 +381,16 @@ img, svg {
 }
 
 .city-name {
-    background: rgba(71, 78, 96, 0.85);
-    color: var(--text-light-unified);
-    padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.78rem;
     font-weight: 800;
-    backdrop-filter: blur(6px);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+    background: rgba(11, 19, 41, 0.75); 
+    color: #ffffff ;
+    padding: 4px 12px;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes point-bounce {
@@ -398,6 +410,8 @@ img, svg {
     padding: 12px;
     background: var(--card-light-unified) !important;
     width: 100%;
+    position: relative;
+    z-index: 1;
 }
 
 .placeholder-box {
@@ -431,6 +445,7 @@ img, svg {
     font-weight: 700;
 }
 
+
 /* ==========================================
    5. FOOTER DE LA CARTE
    ========================================== */
@@ -439,7 +454,7 @@ img, svg {
     margin: 0 !important;
     padding: 12px 16px !important;
     box-sizing: border-box !important;
-    background: url('icons/fond-bleu1.jpg') center/cover no-repeat !important;
+    background: url('icons/fond-bleu5.jpg') center/cover no-repeat !important;
     color: var(--text-light-unified);
     border-bottom-left-radius: 20px !important;
     border-bottom-right-radius: 20px !important;
@@ -487,13 +502,15 @@ img, svg {
 .whatsapp-lightbox {
     display: none;
     position: fixed;
-    z-index: 9999;
     top: 0; left: 0;
     width: 100vw; height: 100vh;
     background: rgba(0, 0, 0, 0.95);
     flex-direction: column;
     justify-content: space-between;
+    z-index: 99999 !important; /* Passe au-dessus de la carte et du reste */
+    align-items: center;
 }
+
 
 /* =============================================================
    EFFET 3D POLAROID & IMPRESSION
