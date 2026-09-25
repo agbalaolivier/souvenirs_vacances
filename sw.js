@@ -1,25 +1,38 @@
-const CACHE_NAME = 'souvenirs-vacances-dynamic';
+const CACHE_NAME = 'souvenirs-vacances-v1';
 
-// Installation : prend le contrôle immédiatement
+// Installation : prise de contrôle immédiate
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activation : prend le contrôle des pages ouvertes
+// Activation : nettoyage des anciens caches + prise de contrôle
 self.addEventListener('activate', (event) => {
-  event.waitUntil(clients.claim());
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
-// Stratégie Réseau d'abord : va chercher sur Internet, sinon prend le cache
+// Stratégie Network-First avec fallback Cache
 self.addEventListener('fetch', (event) => {
-  // Ignorer les requêtes non GET
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // Si le réseau répond, on met à jour le cache silencieusement
-        if (networkResponse && networkResponse.status === 200) {
+        // Met en cache uniquement les réponses valides de ton domaine
+        if (
+          networkResponse && 
+          networkResponse.status === 200 && 
+          networkResponse.type === 'basic'
+        ) {
           const responseToCache = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
@@ -28,7 +41,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // En cas de panne de réseau (hors-ligne), on utilise le cache local
+        // En cas de coupure réseau, bascule sur le cache
         return caches.match(event.request);
       })
   );

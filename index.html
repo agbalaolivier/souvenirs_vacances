@@ -28,6 +28,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
+    <svg width="0" height="0" style="position: absolute;">
+  <defs>
+    <!-- Cœur organique et courbé -->
+    <clipPath id="svg-heart" clipPathUnits="objectBoundingBox">
+      <path d="M 0.5, 0.94 C 0.1, 0.65 0, 0.45 0, 0.28 C 0, 0.12 0.12, 0 0.28, 0 C 0.38, 0 0.46, 0.05 0.5, 0.13 C 0.54, 0.05 0.62, 0 0.72, 0 C 0.88, 0 1, 0.12 1, 0.28 C 1, 0.45 0.9, 0.65 0.5, 0.94 Z" />
+    </clipPath>
+
+    <!-- Étoile aux coins arrondis -->
+    <clipPath id="svg-star" clipPathUnits="objectBoundingBox">
+      <path d="M 0.5, 0.05 L 0.63, 0.34 L 0.95, 0.38 L 0.71, 0.61 L 0.77, 0.93 L 0.5, 0.77 L 0.23, 0.93 L 0.29, 0.61 L 0.05, 0.38 L 0.37, 0.34 Z" />
+    </clipPath>
+
+    <!-- Bulle de discussion fluide -->
+    <clipPath id="svg-bubble" clipPathUnits="objectBoundingBox">
+      <path d="M 0.15, 0 C 0.07, 0 0, 0.07 0, 0.15 L 0, 0.65 C 0, 0.73 0.07, 0.8 0.15, 0.8 L 0.5, 0.8 L 0.3, 1 L 0.65, 0.8 L 0.85, 0.8 C 0.93, 0.8 1, 0.73 1, 0.65 L 1, 0.15 C 1, 0.07 0.93, 0 0.85, 0 Z" />
+    </clipPath>
+  </defs>
+</svg>
 
     <header class="main-title">
         <h1>Créez votre Souvenir de Vacances</h1>
@@ -77,6 +95,27 @@
                 </label>
             </div>
             <div class="form-group">
+                <!-- Choisir la forme des photos -->
+<div class="form-group">
+    <label for="shapeSelect">Forme des photos</label>
+    <select id="shapeSelect">
+        <option value="default">Carré arrondi (Par défaut)</option>
+        <option value="shape-heart">Cœur ❤️</option>
+        <option value="shape-circle">Cercle ⚪</option>
+        <option value="shape-star">Étoile ⭐</option>
+        <option value="shape-bubble">Bulle 💬</option>
+        <option value="shape-hexagon">Hexagone ⬡</option>
+    </select>
+</div>
+
+<!-- Ajouter un fichier MP3 d'ambiance -->
+<div class="form-group">
+    <label for="audioUpload">Musique d'ambiance (MP3)</label>
+    <label class="file-upload-btn">
+        <span>🎵 Ajouter une chanson/voix</span>
+        <input type="file" id="audioUpload" accept="audio/mp3, audio/wav, audio/mpeg">
+    </label>
+</div>
     <label>LOCALISATION</label>
     <div class="geo-input-wrapper">
         <button type="button" id="btnGeolocate" class="btn-geo">
@@ -188,6 +227,19 @@
                     <button type="button" id="nextPhoto" class="nav-btn next-btn">&#10095;</button>
                 </div>
             </div>
+            <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('Service Worker enregistré avec succès :', registration.scope);
+        })
+        .catch((error) => {
+          console.error('Échec de l\'enregistrement du Service Worker :', error);
+        });
+    });
+  }
+</script>
 
 </body>
 </html>

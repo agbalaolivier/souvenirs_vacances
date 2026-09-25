@@ -15,6 +15,17 @@ html, body {
     max-width: 100%;
     overflow-x: hidden;
 }
+.media-item.shape-heart {
+    clip-path: url(#svg-heart);
+}
+
+.media-item.shape-star {
+    clip-path: url(#svg-star);
+}
+
+.media-item.shape-bubble {
+    clip-path: url(#svg-bubble);
+}
 
 :root {
     --primary: #06b6d4;
@@ -22,9 +33,8 @@ html, body {
     --accent-gradient: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
     --bg-dark: #090d16;
     
-    /* Couleurs unifiées pour la carte */
-    --card-dark-unified: #0b1329; /* Noir/Sombre unifié */
-    --card-light-unified: #ffffff; /* Blanc pur unifié */
+    --card-dark-unified: #0b1329;
+    --card-light-unified: #ffffff;
     --text-dark-unified: #0b1329;
     --text-light-unified: #ffffff;
     
@@ -52,7 +62,7 @@ img, svg {
 }
 
 /* ==========================================
-   2. TYPOGRAPHIE ET CONTENEURS
+   2. TYPOGRAPHIE ET LAYOUT
    ========================================== */
 .main-title {
     text-align: center;
@@ -75,7 +85,6 @@ img, svg {
     font-weight: 600;
 }
 
-/* Layout fluide PC & Mobile */
 .container {
     width: 100%;
     max-width: 1100px;
@@ -96,7 +105,7 @@ img, svg {
 }
 
 /* ==========================================
-   3. PANNEAU FORMULAIRE / ÉDITEUR
+   3. PANNEAU FORMULAIRE & INPUTS
    ========================================== */
 .editor-panel {
     background: rgba(15, 23, 42, 0.65);
@@ -119,36 +128,67 @@ img, svg {
     gap: 10px;
 }
 
-.form-group { 
-    margin-bottom: 16px; 
+.form-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .form-group label {
-    display: block;
     font-size: 0.75rem;
     font-weight: 700;
-    margin-bottom: 6px;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.form-group input[type="text"], 
+.form-group input[type="text"],
+.form-group input[type="date"],
+.form-group select,
 .form-group textarea {
     width: 100%;
-    background: rgba(2, 6, 23, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(2, 6, 23, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 12px;
     padding: 12px 14px;
-    color: #fff;
+    color: #ffffff;
     font-size: 0.9rem;
+    font-weight: 500;
     outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
 }
 
-.form-group input:focus, 
+.form-group select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%38bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.form-group select option {
+    background-color: #0f172a;
+    color: #ffffff;
+}
+
+.form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
     border-color: #38bdf8;
+    background: rgba(2, 6, 23, 0.8);
     box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
 }
 
 .subtitle-inputs-grid {
@@ -156,20 +196,7 @@ img, svg {
     gap: 8px;
 }
 
-.subtitle-inputs-grid select,
-.subtitle-inputs-grid input {
-    flex: 1;
-    width: 100%;
-    background: rgba(2, 6, 23, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    padding: 12px 14px;
-    color: #fff;
-    font-size: 0.9rem;
-    outline: none;
-}
-
-/* Géolocalisation */
+/* Géolocalisation & Upload */
 .geo-input-wrapper {
     display: flex;
     flex-direction: column;
@@ -202,7 +229,6 @@ img, svg {
     color: #38bdf8;
 }
 
-/* Upload */
 .file-upload-btn {
     display: flex;
     align-items: center;
@@ -259,11 +285,6 @@ img, svg {
     display: flex;
     justify-content: center;
     width: 100%;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-.preview-area, #flyerCard, .flyer-card {
-    z-index: 10 !important;
 }
 
 .flyer-card {
@@ -271,27 +292,18 @@ img, svg {
     max-width: 400px;
     background: var(--card-light-unified) !important;
     border-radius: 20px !important;
-    overflow: hidden !important;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     color: var(--text-dark-unified);
     display: flex;
     flex-direction: column;
     position: relative;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 auto !important;
-}
-#flyerCard, .flyer-card {
-    overflow: visible !important;
+    overflow: hidden;
 }
 
 .flyer-header {
     width: 100% !important;
-    margin: 0 !important;
     padding: 16px !important;
     box-sizing: border-box !important;
-    border-top-left-radius: 20px !important;
-    border-top-right-radius: 20px !important;
     background: url('icons/base_corfu_greece_03.avif') center/cover no-repeat !important;
     text-align: center;
     color: var(--text-light-unified);
@@ -301,11 +313,7 @@ img, svg {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
 }
-
-
 
 .static-logo {
     position: absolute;
@@ -318,11 +326,6 @@ img, svg {
     background-color: var(--card-light-unified);
     padding: 2px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-.header-titles {
-    margin-top: 8px;
-    text-align: center;
 }
 
 .header-titles h3#outTitle {
@@ -345,39 +348,11 @@ img, svg {
 .location-badge {
     align-items: center;
     color: var(--text-light-unified);
-    border-radius: 16px;
     font-size: 0.7rem;
+    display: flex;
     flex-direction: column;
     gap: 2px;
-    z-index: 10;
-    position: relative;
-    top: auto;
-    right: auto;
     margin-top: 4px;
-
-    background: transparent; 
-    backdrop-filter: none ;
-    padding: 0 ;
-    display: flex;
-}
-
-.curved-arrow {
-    stroke: var(--text-light-unified);
-    color: var(--text-light-unified);
-    margin-left: 2px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.location-handwritten {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--text-light-unified);
-    font-size: 0.72rem;
-    font-weight: 700;
-    font-style: italic;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .city-name {
@@ -385,33 +360,20 @@ img, svg {
     font-size: 0.78rem;
     font-weight: 800;
     border: 1px solid rgba(255, 255, 255, 0.2);
-
     background: rgba(11, 19, 41, 0.75); 
-    color: #ffffff ;
+    color: #ffffff;
     padding: 4px 12px;
     backdrop-filter: blur(4px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-@keyframes point-bounce {
-    0%, 100% { transform: translate(0, 0) rotate(10deg); }
-    50% { transform: translate(2px, 2px) rotate(10deg); }
-}
-
-.location-badge .location-icon {
-    fill: #38bdf8;
-    transform: rotate(-45deg);
 }
 
 .media-gallery {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    padding: 12px;
+    gap: 14px;
+    padding: 16px;
     background: var(--card-light-unified) !important;
     width: 100%;
-    position: relative;
-    z-index: 1;
+    align-items: center;
 }
 
 .placeholder-box {
@@ -425,12 +387,61 @@ img, svg {
     color: #94a3b8;
     font-weight: 600;
     font-size: 0.85rem;
-    background: var(--card-light-unified);
 }
 
-.media-gallery:has(.media-item:only-child) .media-item {
-    grid-column: 1 / -1;
-    height: 220px;
+/* ==========================================
+   5. FORMES DES PHOTOS (CLIP-PATH NET ET PROPRE)
+   ========================================== */
+.media-item {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin: 0 auto;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    transition: transform 0.3s ease, filter 0.3s ease;
+    cursor: pointer;
+}
+
+.media-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Découpe complète appliquée sur le conteneur */
+.media-item.shape-heart {
+    clip-path: polygon(50% 15%, 65% 0%, 85% 0%, 100% 20%, 100% 40%, 50% 95%, 0% 40%, 0% 20%, 15% 0%, 35% 0%);
+}
+
+.media-item.shape-circle {
+    clip-path: circle(50% at 50% 50%);
+}
+
+.media-item.shape-star {
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+}
+
+.media-item.shape-bubble {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 75% 75%, 75% 100%, 50% 75%, 0% 75%);
+}
+
+.media-item.shape-hexagon {
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+}
+
+.media-item.shape-default,
+.media-item:not([class*="shape-"]) {
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+.media-item:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.25));
 }
 
 .flyer-body {
@@ -445,13 +456,37 @@ img, svg {
     font-weight: 700;
 }
 
+/* ==========================================
+   6. LECTEUR AUDIO MP3
+   ========================================== */
+.audio-player-wrapper {
+    margin-top: 12px;
+    padding: 10px;
+    background: rgba(11, 19, 41, 0.05);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.audio-player-wrapper audio {
+    width: 100%;
+    height: 36px;
+    border-radius: 8px;
+}
+
+.audio-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--card-dark-unified);
+}
 
 /* ==========================================
-   5. FOOTER DE LA CARTE
+   7. FOOTER DE LA CARTE
    ========================================== */
 .app-promo-footer {
     width: 100% !important;
-    margin: 0 !important;
     padding: 12px 16px !important;
     box-sizing: border-box !important;
     background: url('icons/fond-bleu5.jpg') center/cover no-repeat !important;
@@ -466,7 +501,6 @@ img, svg {
     gap: 10px;
 }
 
-/* Harmonisation exacte du logo footer avec le logo header */
 .app-promo-footer img,
 .promo-logo {
     width: 36px !important;       
@@ -489,7 +523,6 @@ img, svg {
     color: var(--text-light-unified);
 }
 
-/* Couleur du lien conservée intacte */
 .promo-text p span {
     color: #63130f;
     font-weight: 700;
@@ -497,7 +530,7 @@ img, svg {
 }
 
 /* ==========================================
-   6. LIGHTBOX
+   8. LIGHTBOX / MODALE
    ========================================== */
 .whatsapp-lightbox {
     display: none;
@@ -507,14 +540,12 @@ img, svg {
     background: rgba(0, 0, 0, 0.95);
     flex-direction: column;
     justify-content: space-between;
-    z-index: 99999 !important; /* Passe au-dessus de la carte et du reste */
+    z-index: 99999 !important;
     align-items: center;
-
     padding: 20px !important;
     box-sizing: border-box !important;
 }
 
-/* En-tête de la modale */
 .lightbox-header {
     width: 100%;
     max-width: 1000px;
@@ -522,7 +553,6 @@ img, svg {
     justify-content: space-between;
     align-items: center;
     color: #ffffff;
-    z-index: 10;
 }
 
 .lightbox-counter {
@@ -542,11 +572,9 @@ img, svg {
     color: #ffffff;
     font-size: 1.8rem;
     cursor: pointer;
-    text-decoration: none;
     line-height: 1;
 }
 
-/* Zone d'affichage de la photo */
 .lightbox-content-wrapper {
     position: relative;
     display: flex;
@@ -559,14 +587,11 @@ img, svg {
 .modal-content {
     max-width: 90vw !important;
     max-height: 80vh !important;
-    width: auto !important;
-    height: auto !important;
     object-fit: contain !important;
     border-radius: 8px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
 }
 
-/* Boutons Précédent / Suivant */
 .nav-btn {
     position: absolute;
     top: 50%;
@@ -582,7 +607,6 @@ img, svg {
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
     z-index: 10;
 }
 
@@ -592,41 +616,3 @@ img, svg {
 
 .prev-btn { left: 10px; }
 .next-btn { right: 10px; }
-
-
-/* =============================================================
-   EFFET 3D POLAROID & IMPRESSION
-   ============================================================= */
-
-#flyerCard {
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25) !important;
-    border-radius: 20px !important;
-    overflow: hidden !important; /* Maintient l'anti-décalage sur les bords */
-}
-
-.media-item {
-    background: var(--card-light-unified) !important;
-    padding: 6px 6px 20px 6px !important;
-    border-radius: 4px !important;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2), 0 2px 5px rgba(0, 0, 0, 0.1) !important;
-    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-}
-
-.media-item:nth-child(1) {
-    transform: rotate(-4deg) translateY(-2px);
-}
-
-.media-item:nth-child(2) {
-    transform: rotate(3deg) scale(1.05) translateY(-6px);
-    z-index: 2;
-}
-
-.media-item:nth-child(3) {
-    transform: rotate(-2deg) translateY(-2px);
-}
-
-.media-item:hover {
-    transform: scale(1.12) rotate(0deg) translateY(-10px) !important;
-    z-index: 10 !important;
-    box-shadow: 0 18px 30px rgba(0, 0, 0, 0.3) !important;
-}

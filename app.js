@@ -1,350 +1,611 @@
-const APP_LINK = "https://agbalaolivier.github.io/souvenirs_vacances/";
+import React, { useState, useRef } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+  Platform,
+  useWindowDimensions,
+  Modal,
+  Alert,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import * as Location from 'expo-location';
+import * as Sharing from 'expo-sharing';
+import { Audio } from 'expo-av';
+import { captureRef } from 'react-native-view-shot';
 
-let loadedPhotos = [];
-let currentPhotoIndex = 0;
+import CardPreview from './components/CardPreview';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // -------------------------------------------------------------
-    // 1. SÉLECTION DES ÉLÉMENTS DU DOM
-    // -------------------------------------------------------------
-    const inTitle = document.getElementById('inTitle');
-    const inMessage = document.getElementById('inMessage');
-    const inMedia = document.getElementById('inMedia');
+const SHAPES_OPTIONS = [
+  { id: 'shape-square', label: 'Carré Arrondi', icon: '🔲' },
+  { id: 'shape-heart', label: 'Cœur', icon: '❤️' },
+  { id: 'shape-circle', label: 'Cercle', icon: '⚪' },
+  { id: 'shape-star', label: 'Étoile', icon: '⭐' },
+  { id: 'shape-diamond', label: 'Losange / Diamant', icon: '🔷' },
+  { id: 'shape-hexagon', label: 'Hexagone', icon: '⬢' },
+  { id: 'shape-bubble', label: 'Bulle', icon: '💬' },
+  { id: 'shape-stamp', label: 'Timbre', icon: '✉️' },
+  { id: 'shape-clover', label: 'Trèfle / Fleur', icon: '🍀' },
+  { id: 'shape-cloud', label: 'Nuage', icon: '☁️' },
+];
 
-    const outTitle = document.getElementById('outTitle');
-    const outSubtitle = document.getElementById('outSubtitle');
-    const outMessage = document.getElementById('outMessage');
-    const mediaGallery = document.getElementById('mediaGallery');
+const THEMES_OPTIONS = [
+  { id: 'tropical', label: '🌴 Tropical & Soleil', color: '#0284c7' },
+  { id: 'noel', label: '🎄 Fêtes & Noël', color: '#991b1b' },
+  { id: 'romantique', label: '💕 Romantique', color: '#e11d48' },
+  { id: 'chic', label: '✨ Chic Minimaliste', color: '#27272a' },
+];
 
-    const btnDownload = document.getElementById('btnDownload');
-    const btnShare = document.getElementById('btnShare');
-    const flyerCard = document.getElementById('flyerCard');
+export default function App() {
+  const [title, setTitle] = useState('Meilleurs Vœux & Souvenirs !');
+  const [period, setPeriod] = useState("Aujourd'hui");
+  const [selectedSeason, setSelectedSeason] = useState('today');
+  const [selectedYear, setSelectedYear] = useState('2026');
+  const [customDate, setCustomDate] = useState('');
+  const [subtitle, setSubtitle] = useState('Des moments inoubliables partagés avec vous');
+  const [message, setMessage] = useState('Plein de bonheur et de soleil !');
+  const [location, setLocation] = useState('Paradis Tropical');
+  const [photos, setPhotos] = useState([]);
+  
+  const [shape, setShape] = useState('shape-square');
+  const [theme, setTheme] = useState('tropical');
+  const [isShapeModalVisible, setIsShapeModalVisible] = useState(false);
+  const [isExportModalVisible, setIsExportModalVisible] = useState(false);
 
-    // Éléments du sous-titre, des saisons et de la date
-    const periodSelect = document.getElementById('periodSelect');
-    const yearSelect = document.getElementById('yearSelect');
-    const customDatePicker = document.getElementById('customDatePicker');
-    const inSubtitleText = document.getElementById('inSubtitleText');
+  const [audioUri, setAudioUri] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
+  const [audioName, setAudioName] = useState('Musique d\'ambiance longue (Défaut)');
+  const [sound, setSound] = useState(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [recording, setRecording] = useState(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioDuration, setAudioDuration] = useState('15');
 
-    // Lightbox
-    const imageModal = document.getElementById('imageModal');
-    const imgFull = document.getElementById('imgFull');
-    const closeModal = document.querySelector('.close-modal');
-    const btnDownloadSingle = document.getElementById('btnDownloadSingle');
-    const modalCounter = document.getElementById('modalCounter');
-    const prevPhoto = document.getElementById('prevPhoto');
-    const nextPhoto = document.getElementById('nextPhoto');
+  const cardRef = useRef();
+  const { width } = useWindowDimensions();
+  const isLargeScreen = width >= 900;
 
-    // -------------------------------------------------------------
-    // 2. GÉNÉRATION DES 10 DERNIÈRES ANNÉES & GESTION DU SOUS-TITRE
-    // -------------------------------------------------------------
-    if (yearSelect) {
-        const currentYear = new Date().getFullYear();
-        yearSelect.innerHTML = '';
-        for (let i = 0; i <= 10; i++) {
-            const yearOption = document.createElement('option');
-            const yearValue = currentYear - i;
-            yearOption.value = yearValue;
-            yearOption.textContent = yearValue;
-            yearSelect.appendChild(yearOption);
-        }
+  const years = Array.from({ length: 10 }, (_, i) => (2026 - i).toString());
+
+  const handlePeriodChange = (season, yearVal = selectedYear, dateVal = customDate) => {
+    setSelectedSeason(season);
+    if (season === 'today') {
+      setPeriod("Aujourd'hui");
+    } else if (season === 'customDate') {
+      setPeriod(dateVal || 'Date précise');
+    } else {
+      setPeriod(`${season} ${yearVal}`);
     }
+  };
 
-    function updateSubtitle() {
-        if (!periodSelect || !outSubtitle) return;
+  const pickImagesMobile = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') return;
 
-        let selectedPeriod = periodSelect.value;
-
-        if (yearSelect) yearSelect.style.display = 'none';
-        if (customDatePicker) customDatePicker.style.display = 'none';
-
-        // 1. Cas "Aujourd'hui"
-        if (selectedPeriod === 'today') {
-            const today = new Date();
-            selectedPeriod = today.toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            });
-        } 
-        // 2. Cas "Date précise"
-        else if (selectedPeriod === 'customDate') {
-            if (customDatePicker) {
-                customDatePicker.style.display = 'block';
-                if (customDatePicker.value) {
-                    const dateObj = new Date(customDatePicker.value);
-                    selectedPeriod = dateObj.toLocaleDateString('fr-FR', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                    });
-                } else {
-                    selectedPeriod = 'Date';
-                }
-            }
-        } 
-        // 3. Cas des Saisons (Affiche le menu de choix de l'année)
-        else {
-            if (yearSelect) {
-                yearSelect.style.display = 'block';
-                const selectedYear = yearSelect.value;
-                selectedPeriod = `${selectedPeriod} ${selectedYear}`;
-            }
-        }
-
-        const customText = inSubtitleText ? inSubtitleText.value.trim() : '';
-        
-        if (customText) {
-            outSubtitle.textContent = `${selectedPeriod} • ${customText}`;
-        } else {
-            outSubtitle.textContent = selectedPeriod;
-        }
-    }
-
-    // Écouteurs pour le sous-titre
-    if (periodSelect) periodSelect.addEventListener('change', updateSubtitle);
-    if (yearSelect) yearSelect.addEventListener('change', updateSubtitle);
-    if (customDatePicker) customDatePicker.addEventListener('change', updateSubtitle);
-    if (inSubtitleText) inSubtitleText.addEventListener('input', updateSubtitle);
-
-    // Initialisation
-    updateSubtitle();
-
-    // -------------------------------------------------------------
-    // 3. MISE À JOUR SYNCHRONE DES AUTRES CHAMPS
-    // -------------------------------------------------------------
-    if (inTitle && outTitle) {
-        inTitle.addEventListener('input', e => outTitle.textContent = e.target.value);
-    }
-
-    if (inMessage && outMessage) {
-        inMessage.addEventListener('input', e => {
-            outMessage.textContent = e.target.value.slice(0, 30);
-        });
-    }
-
-    // -------------------------------------------------------------
-    // 4. GALERIE PHOTO & LIGHTBOX
-    // -------------------------------------------------------------
-    function updateLightbox(index) {
-        if (loadedPhotos.length === 0) return;
-        currentPhotoIndex = index;
-        
-        const photoData = loadedPhotos[currentPhotoIndex];
-        if (imgFull) imgFull.src = photoData;
-        if (btnDownloadSingle) {
-            btnDownloadSingle.href = photoData;
-            btnDownloadSingle.download = `photo-vacances-${currentPhotoIndex + 1}.jpg`;
-        }
-        if (modalCounter) {
-            modalCounter.textContent = `${currentPhotoIndex + 1} / ${loadedPhotos.length}`;
-        }
-        
-        if (prevPhoto) prevPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
-        if (nextPhoto) nextPhoto.style.display = loadedPhotos.length > 1 ? 'block' : 'none';
-    }
-
-    if (prevPhoto) {
-        prevPhoto.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const newIndex = (currentPhotoIndex - 1 + loadedPhotos.length) % loadedPhotos.length;
-            updateLightbox(newIndex);
-        });
-    }
-
-    if (nextPhoto) {
-        nextPhoto.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const newIndex = (currentPhotoIndex + 1) % loadedPhotos.length;
-            updateLightbox(newIndex);
-        });
-    }
-
-    if (closeModal && imageModal) {
-        closeModal.addEventListener('click', () => imageModal.style.display = 'none');
-        imageModal.addEventListener('click', (e) => {
-            if (e.target === imageModal || e.target.classList.contains('lightbox-content-wrapper')) {
-                imageModal.style.display = 'none';
-            }
-        });
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (imageModal && imageModal.style.display === 'flex') {
-            if (e.key === 'ArrowRight' && nextPhoto) nextPhoto.click();
-            if (e.key === 'ArrowLeft' && prevPhoto) prevPhoto.click();
-            if (e.key === 'Escape' && closeModal) closeModal.click();
-        }
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsMultipleSelection: true,
+      quality: 0.8,
     });
 
-    if (inMedia) {
-        inMedia.addEventListener('change', e => {
-            const files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
-            if (!mediaGallery) return;
-
-            mediaGallery.innerHTML = '';
-            loadedPhotos = [];
-
-            if (files.length === 0) {
-                mediaGallery.innerHTML = '<div class="placeholder-box">Vos photos apparaîtront ici...</div>';
-                return;
-            }
-
-            files.forEach((file) => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    const src = ev.target.result;
-                    loadedPhotos.push(src);
-
-                    const img = document.createElement('img');
-                    img.src = src;
-                    img.className = 'media-item';
-
-                    img.addEventListener('click', () => {
-                        updateLightbox(loadedPhotos.indexOf(src));
-                        if (imageModal) imageModal.style.display = 'flex';
-                    });
-
-                    mediaGallery.appendChild(img);
-                };
-                reader.readAsDataURL(file);
-            });
-        });
+    if (!result.canceled) {
+      const selectedUris = result.assets.map((asset) => asset.uri);
+      setPhotos((prev) => [...prev, ...selectedUris]);
     }
+  };
 
-    // -------------------------------------------------------------
-    // 5. GÉNÉRATION CANVAS (html2canvas)
-    // -------------------------------------------------------------
-    async function generateCanvas() {
-        if (typeof html2canvas === 'undefined') {
-            throw new Error("html2canvas non trouvé.");
+  const handleWebFileChange = (event) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      const newUris = Array.from(files).map((file) => URL.createObjectURL(file));
+      setPhotos((prev) => [...prev, ...newUris]);
+    }
+  };
+
+  const handleAudioFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const fileUri = URL.createObjectURL(file);
+      setAudioUri(fileUri);
+      setAudioName(file.name);
+
+      if (sound) {
+        await sound.unloadAsync();
+      }
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        { uri: fileUri },
+        { shouldPlay: false }
+      );
+      setSound(newSound);
+      setIsPlayingAudio(false);
+    }
+  };
+
+  const toggleRecording = async () => {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission refusée', 'Accès au micro requis.');
+        return;
+      }
+
+      if (isRecording) {
+        setIsRecording(false);
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        setAudioUri(uri);
+        setAudioName('Mon_message_vocal.wav');
+
+        const { sound: newSound } = await Audio.Sound.createAsync({ uri });
+        setSound(newSound);
+        setRecording(null);
+      } else {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+        const rec = new Audio.Recording();
+        await rec.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+        await rec.startAsync();
+        setRecording(rec);
+        setIsRecording(true);
+      }
+    } catch (err) {
+      Alert.alert('Erreur', "Impossible d'enregistrer l'audio.");
+      setIsRecording(false);
+    }
+  };
+
+  const toggleAudio = async () => {
+    try {
+      if (!sound && audioUri) {
+        const { sound: newSound } = await Audio.Sound.createAsync({ uri: audioUri });
+        setSound(newSound);
+        await newSound.playAsync();
+        setIsPlayingAudio(true);
+        return;
+      }
+      if (sound) {
+        if (isPlayingAudio) {
+          await sound.pauseAsync();
+          setIsPlayingAudio(false);
+        } else {
+          await sound.playAsync();
+          setIsPlayingAudio(true);
         }
-        return await html2canvas(flyerCard, {
-            scale: 2,
-            useCORS: true,
-            allowTaint: false,
-            logging: false
-        });
+      }
+    } catch (e) {
+      Alert.alert('Erreur Audio', 'Impossible de lire la musique.');
     }
+  };
 
-    if (btnDownload) {
-        btnDownload.addEventListener('click', async () => {
-            const originalText = btnDownload.innerText;
-            try {
-                btnDownload.innerText = "⏳ Génération...";
-                btnDownload.disabled = true;
-
-                const canvas = await generateCanvas();
-                const link = document.createElement('a');
-                link.download = 'carte-souvenir-vacances.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            } catch (err) {
-                alert("Erreur lors de la création de l'image : " + err.message);
-            } finally {
-                btnDownload.innerText = originalText;
-                btnDownload.disabled = false;
-            }
+  const fetchLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const geocode = await Location.reverseGeocodeAsync({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
         });
+
+        if (geocode && geocode.length > 0) {
+          const place = geocode[0];
+          const cityName = place.city || place.town || place.village || 'Ma position';
+          const countryName = place.country || '';
+          setLocation(`${cityName}, ${countryName}`);
+          return;
+        }
+      }
+
+      if (Platform.OS === 'web') {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.city && data.country_name) {
+          setLocation(`${data.city}, ${data.country_name}`);
+          return;
+        }
+      }
+
+      setLocation('Destination de Rêve');
+    } catch {
+      setLocation('Destination de Rêve');
     }
+  };
 
-    // -------------------------------------------------------------
-    // 6. PARTAGER LA CARTE
-    // -------------------------------------------------------------
-    if (btnShare) {
-        btnShare.addEventListener('click', async () => {
-            const originalText = btnShare.innerText;
-            try {
-                btnShare.innerText = "⏳ Préparation...";
-                btnShare.disabled = true;
-
-                const shareText = `Crée toi aussi ta carte de vacances sur :\n${APP_LINK}`;
-                const canvas = await generateCanvas();
-
-                canvas.toBlob(async (blob) => {
-                    if (!blob) return;
-
-                    const file = new File([blob], 'carte-souvenir.png', { type: 'image/png' });
-
-                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({
-                                title: 'Ma carte souvenir',
-                                text: shareText,
-                                files: [file]
-                            });
-                        } catch (shareErr) {
-                            if (shareErr.name !== 'AbortError') console.log('Partage annulé');
-                        }
-                    } else {
-                        await navigator.clipboard.writeText(shareText);
-                        
-                        const link = document.createElement('a');
-                        link.download = 'carte-souvenir-vacances.png';
-                        link.href = canvas.toDataURL('image/png');
-                        link.click();
-
-                        alert("L'image a été téléchargée et le lien d'invitation a été copié dans votre presse-papier !");
-                    }
-                }, 'image/png');
-
-            } catch (err) {
-                alert("Impossible de préparer le partage : " + err.message);
-            } finally {
-                btnShare.innerText = originalText;
-                btnShare.disabled = false;
-            }
-        });
+  const downloadImagePNG = async () => {
+    setIsExportModalVisible(false);
+    try {
+      const uri = await captureRef(cardRef, { format: 'png', quality: 0.9 });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri);
+      } else if (Platform.OS === 'web') {
+        const link = document.createElement('a');
+        link.download = 'carte-de-voeux.png';
+        link.href = uri;
+        link.click();
+      }
+    } catch (err) {
+      Alert.alert('Erreur', "Échec de l'enregistrement de l'image.");
     }
+  };
 
-    // -------------------------------------------------------------
-    // 7. GÉOLOCALISATION
-    // -------------------------------------------------------------
-    const btnGeolocate = document.getElementById('btnGeolocate');
-    const geoStatus = document.getElementById('geoStatus');
-    const locationBadge = document.getElementById('locationBadge');
-    const outLocationText = document.getElementById('outLocationText');
+  const exportAsMP4 = async () => {
+    setIsExportModalVisible(false);
+    const durationMs = parseInt(audioDuration, 10) * 1000 || 15000;
 
-    if (btnGeolocate) {
-        btnGeolocate.addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                alert("La géolocalisation n'est pas supportée par votre navigateur.");
-                return;
-            }
+    if (Platform.OS === 'web') {
+      try {
+        const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
 
-            geoStatus.textContent = "⏳ Recherche de la position...";
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new window.Image();
+        img.src = imageUri;
 
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
+        img.onload = async () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
 
-                    try {
-                        const response = await fetch(
-                            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-                        );
-                        const data = await response.json();
+          const canvasStream = canvas.captureStream(30);
+          let combinedStream = canvasStream;
 
-                        const city = data.address.city || data.address.town || data.address.village || data.address.state || "Position détectée";
-                        const country = data.address.country || "";
+          if (audioUri) {
+            const audioElement = new window.Audio(audioUri);
+            audioElement.loop = true;
+            await audioElement.play();
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(audioElement);
+            const dest = audioCtx.createMediaStreamDestination();
+            source.connect(dest);
 
-                        const locationString = `${city}, ${country}`;
+            combinedStream = new MediaStream([
+              ...canvasStream.getVideoTracks(),
+              ...dest.stream.getAudioTracks(),
+            ]);
+          }
 
-                        if (outLocationText) outLocationText.textContent = locationString;
-                        if (locationBadge) locationBadge.style.display = 'inline-flex';
-                        
-                        geoStatus.textContent = `📍 ${locationString}`;
+          const mediaRecorder = new MediaRecorder(combinedStream, {
+            mimeType: 'video/webm;codecs=vp9',
+          });
+          const chunks = [];
 
-                    } catch (err) {
-                        geoStatus.textContent = "❌ Impossible de récupérer la ville.";
-                        console.error(err);
-                    }
-                },
-                (error) => {
-                    geoStatus.textContent = "⚠️ Accès à la position refusé.";
-                },
-                { enableHighAccuracy: true, timeout: 10000 }
-            );
-        });
+          mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+          mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/mp4' });
+            const videoUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = 'carte-de-voeux-animee.mp4';
+            link.href = videoUrl;
+            link.click();
+          };
+
+          mediaRecorder.start();
+
+          const interval = setInterval(() => {
+            ctx.drawImage(img, 0, 0);
+          }, 1000 / 30);
+
+          setTimeout(() => {
+            clearInterval(interval);
+            mediaRecorder.stop();
+          }, durationMs);
+        };
+      } catch (e) {
+        Alert.alert('Erreur MP4', 'Impossible de générer le fichier vidéo MP4.');
+      }
+    } else {
+      Alert.alert('Information', "L'exportation vidéo MP4 est optimisée pour le navigateur web.");
     }
+  };
+
+  const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.mainTitle}>✨ Studio de Création de Cartes Magiques</Text>
+        <Text style={styles.mainSubtitle}>
+          Personnalisez l'ambiance, les formes, les médias et la musique pour un rendu unique
+        </Text>
+
+        <View style={[styles.mainLayout, isLargeScreen && styles.twoColumnLayout]}>
+          {/* COLONNE GAUCHE : FORMULAIRE */}
+          <View style={[styles.editorPanel, isLargeScreen && styles.columnFlex]}>
+            <Text style={styles.panelHeader}>🎨 Personnalisation & Ambiance</Text>
+
+            {/* Thème visuel */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Ambiance / Thème visuel</Text>
+              <View style={styles.seasonRow}>
+                {THEMES_OPTIONS.map((t) => (
+                  <TouchableOpacity
+                    key={t.id}
+                    style={[styles.seasonChip, theme === t.id && styles.seasonChipActive]}
+                    onPress={() => setTheme(t.id)}
+                  >
+                    <Text style={[styles.seasonChipText, theme === t.id && styles.seasonChipTextActive]}>
+                      {t.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Titre principal</Text>
+              <TextInput style={styles.input} value={title} onChangeText={setTitle} />
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Période et date</Text>
+              <View style={styles.seasonRow}>
+                {['today', 'Été', 'Hiver', 'Printemps', 'customDate'].map((s) => (
+                  <TouchableOpacity
+                    key={s}
+                    style={[styles.seasonChip, selectedSeason === s && styles.seasonChipActive]}
+                    onPress={() => handlePeriodChange(s)}
+                  >
+                    <Text style={[styles.seasonChipText, selectedSeason === s && styles.seasonChipTextActive]}>
+                      {s === 'today' ? "Aujourd'hui" : s === 'customDate' ? 'Date...' : s}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Message de sous-titre</Text>
+              <TextInput style={styles.input} value={subtitle} onChangeText={setSubtitle} />
+            </View>
+
+            {/* Sélection de photos ou vidéos */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Médias de la carte (Photos ou Vidéos)</Text>
+              {Platform.OS === 'web' ? (
+                <label style={styles.webFileButton}>
+                  🎬 Sélectionner photos ou vidéos
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*,video/*"
+                    onChange={handleWebFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </label>
+              ) : (
+                <TouchableOpacity style={styles.fileUploadBtn} onPress={pickImagesMobile}>
+                  <Text style={styles.fileUploadBtnText}>🎬 Sélectionner photos ou vidéos</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {/* Style de découpe */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Style de découpe des photos</Text>
+              <TouchableOpacity
+                style={styles.shapeSelectorBtn}
+                onPress={() => setIsShapeModalVisible(true)}
+              >
+                <Text style={styles.shapeSelectorText}>
+                  {selectedShapeObj?.icon} {selectedShapeObj?.label} (Changer de forme)
+                </Text>
+                <Text style={styles.dropdownArrow}>▼</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Musique et Audio */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Musique d'ambiance ou voix</Text>
+              <View style={styles.audioRowActions}>
+                {Platform.OS === 'web' && (
+                  <label style={styles.webAudioButton}>
+                    🎵 Fichier MP3
+                    <input
+                      type="file"
+                      accept="audio/mp3,audio/*"
+                      onChange={handleAudioFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                )}
+
+                <TouchableOpacity
+                  style={[styles.btnRecord, isRecording && styles.btnRecordingActive]}
+                  onPress={toggleRecording}
+                >
+                  <Text style={styles.btnRecordText}>
+                    {isRecording ? '🔴 Enregistrement...' : '🎙️ Enregistrer un message'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {audioName ? <Text style={styles.audioFileInfo}>Piste active : {audioName}</Text> : null}
+
+              <TouchableOpacity style={styles.btnPlayAudio} onPress={toggleAudio}>
+                <Text style={styles.btnPlayAudioText}>
+                  {isPlayingAudio ? '⏸️ Suspendre la musique' : '▶️ Tester l\'ambiance musicale'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Localisation</Text>
+              <TouchableOpacity style={styles.btnGeo} onPress={fetchLocation}>
+                <Text style={styles.btnGeoText}>📍 Ajouter / Détecter la localisation</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Message personnel (max 30 caractères)</Text>
+              <TextInput
+                style={styles.input}
+                value={message}
+                maxLength={30}
+                onChangeText={setMessage}
+              />
+            </View>
+
+            <View style={styles.exportActions}>
+              <TouchableOpacity
+                style={styles.btnDownload}
+                onPress={() => setIsExportModalVisible(true)}
+              >
+                <Text style={styles.btnExportText}>🎁 Enregistrer / Partager la Carte ▾</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* COLONNE DROITE : APERÇU */}
+          <View style={[styles.previewSection, isLargeScreen && styles.columnFlex]}>
+            <Text style={styles.previewTitle}>✨ Aperçu magique en direct</Text>
+            <CardPreview
+              cardRef={cardRef}
+              title={title}
+              period={period}
+              subtitle={subtitle}
+              location={location}
+              photos={photos}
+              shape={shape}
+              message={message}
+              theme={theme}
+            />
+          </View>
+        </View>
+
+        {/* MODALE FORMES */}
+        <Modal
+          visible={isShapeModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsShapeModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Choisissez une forme artistique</Text>
+                <TouchableOpacity onPress={() => setIsShapeModalVisible(false)}>
+                  <Text style={styles.closeModalBtn}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={{ maxHeight: 380 }}>
+                <View style={styles.shapesGrid}>
+                  {SHAPES_OPTIONS.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.shapeCard,
+                        shape === item.id && styles.shapeCardSelected,
+                      ]}
+                      onPress={() => {
+                        setShape(item.id);
+                        setIsShapeModalVisible(false);
+                      }}
+                    >
+                      <Text style={styles.shapeCardIcon}>{item.icon}</Text>
+                      <Text style={styles.shapeCardLabel}>{item.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* MODALE EXPORT */}
+        <Modal
+          visible={isExportModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsExportModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Partagez votre chef-d'œuvre</Text>
+                <TouchableOpacity onPress={() => setIsExportModalVisible(false)}>
+                  <Text style={styles.closeModalBtn}>✕</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.exportOptionsList}>
+                <TouchableOpacity style={styles.exportOptionCard} onPress={downloadImagePNG}>
+                  <Text style={styles.exportOptionIcon}>📸</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exportOptionTitle}>Télécharger en Image HD (PNG)</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
+                  <Text style={styles.exportOptionIcon}>🎬</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (MP4)</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0f172a' },
+  scrollContent: { padding: 20, paddingBottom: 40, maxWidth: 1240, width: '100%', alignSelf: 'center' },
+  mainTitle: { fontSize: 24, fontWeight: '800', color: '#f8fafc', textAlign: 'center', marginTop: 10 },
+  mainSubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 24, marginTop: 4 },
+  mainLayout: { flexDirection: 'column', gap: 20 },
+  twoColumnLayout: { flexDirection: 'row', alignItems: 'flex-start' },
+  columnFlex: { flex: 1 },
+  editorPanel: { backgroundColor: '#1e293b', borderRadius: 16, padding: 22, borderWidth: 1, borderColor: '#334155' },
+  panelHeader: { fontSize: 18, fontWeight: '700', color: '#38bdf8', marginBottom: 18 },
+  formGroup: { marginBottom: 16 },
+  label: { fontSize: 11, fontWeight: '700', color: '#94a3b8', marginBottom: 6, textTransform: 'uppercase' },
+  input: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, borderRadius: 10, color: '#ffffff', padding: 12, fontSize: 13 },
+  seasonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  seasonChip: { backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  seasonChipActive: { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
+  seasonChipText: { color: '#94a3b8', fontSize: 11 },
+  seasonChipTextActive: { color: '#ffffff', fontWeight: '700' },
+  webFileButton: { display: 'flex', backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: 13, fontWeight: '700', cursor: 'pointer' },
+  fileUploadBtn: { backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center' },
+  fileUploadBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
+  shapeSelectorBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#0f172a', borderColor: '#38bdf8', borderWidth: 1, borderRadius: 10, padding: 12 },
+  shapeSelectorText: { color: '#38bdf8', fontSize: 13, fontWeight: '700' },
+  dropdownArrow: { color: '#38bdf8', fontSize: 12 },
+  audioRowActions: { flexDirection: 'row', gap: 8 },
+  webAudioButton: { flex: 1, display: 'flex', backgroundColor: '#0284c7', borderRadius: 10, padding: 12, alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: 12, fontWeight: '700', cursor: 'pointer' },
+  btnRecord: { flex: 1, backgroundColor: '#0f172a', borderColor: '#ef4444', borderWidth: 1, borderRadius: 10, padding: 12, alignItems: 'center', justifyContent: 'center' },
+  btnRecordingActive: { backgroundColor: '#ef4444' },
+  btnRecordText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
+  audioFileInfo: { color: '#38bdf8', fontSize: 11, marginTop: 6, fontStyle: 'italic' },
+  btnPlayAudio: { backgroundColor: '#0f172a', borderColor: '#38bdf8', borderWidth: 1, borderRadius: 10, padding: 10, marginTop: 8, alignItems: 'center' },
+  btnPlayAudioText: { color: '#38bdf8', fontSize: 12, fontWeight: '700' },
+  btnGeo: { backgroundColor: '#0f172a', borderWidth: 1, borderColor: '#334155', borderRadius: 10, padding: 12, alignItems: 'center' },
+  btnGeoText: { color: '#38bdf8', fontSize: 12, fontWeight: '700' },
+  exportActions: { marginTop: 18 },
+  btnDownload: { backgroundColor: '#f43f5e', padding: 16, borderRadius: 12, alignItems: 'center' },
+  btnExportText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
+  previewSection: { width: '100%' },
+  previewTitle: { fontSize: 12, fontWeight: '700', color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  modalContent: { width: '100%', maxWidth: 480, backgroundColor: '#1e293b', borderRadius: 18, padding: 22, borderWidth: 1, borderColor: '#334155' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: '#ffffff' },
+  closeModalBtn: { color: '#94a3b8', fontSize: 20, fontWeight: '700', padding: 4 },
+  shapesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
+  shapeCard: { width: '48%', backgroundColor: '#0f172a', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#334155', alignItems: 'center' },
+  shapeCardSelected: { borderColor: '#38bdf8', backgroundColor: '#0369a1' },
+  shapeCardIcon: { fontSize: 24, marginBottom: 6 },
+  shapeCardLabel: { color: '#ffffff', fontSize: 12, fontWeight: '600', textAlign: 'center' },
+  exportOptionsList: { gap: 12 },
+  exportOptionCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0f172a', padding: 16, borderRadius: 14, borderWidth: 1, borderColor: '#334155', gap: 14 },
+  exportOptionIcon: { fontSize: 28 },
+  exportOptionTitle: { color: '#ffffff', fontSize: 14, fontWeight: '700' },
 });
