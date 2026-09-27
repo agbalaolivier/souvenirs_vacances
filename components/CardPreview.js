@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
 import { Video } from 'expo-av';
+import ShapedImage from './ShapedImage';
 
 export default function CardPreview({
   cardRef,
@@ -46,25 +47,6 @@ export default function CardPreview({
 
   const currentTheme = themesConfig[theme] || themesConfig.tropical;
 
-  // Formes géométriques en CSS dynamique
-  const getShapeRadius = (selectedShape) => {
-    switch (selectedShape) {
-      case 'shape-circle': return '50%';
-      case 'shape-heart': return '50% 50% 20% / 60% 60% 40%';
-      case 'shape-diamond': return '25%';
-      case 'shape-star':
-      case 'shape-hexagon':
-      case 'shape-clover':
-      case 'shape-cloud':
-      case 'shape-stamp': return '30%';
-      case 'shape-bubble': return '20px 20px 5px 20px';
-      case 'shape-square':
-      default: return '8px';
-    }
-  };
-
-  const currentRadius = getShapeRadius(shape);
-
   if (Platform.OS === 'web') {
     return (
       <div
@@ -102,6 +84,7 @@ export default function CardPreview({
         </div>
 
         {/* Galerie Photos / Vidéos */}
+       {/* Galerie Photos / Vidéos */}
         <div style={{ padding: '20px', minHeight: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           {photos.length === 0 ? (
             <div style={{ width: '100%', height: '130px', border: '2px dashed #cbd5e1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.5)', color: '#64748b', fontSize: '13px', fontWeight: '700' }}>
@@ -109,16 +92,21 @@ export default function CardPreview({
             </div>
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px', maxWidth: '420px' }}>
-              {photos.map((uri, index) => {
-                const isVideo = uri && (uri.endsWith('.mp4') || uri.includes('blob:') || uri.includes('video'));
+              {photos.map((item, index) => {
+                // On gère le cas où l'élément est un objet { uri, type } ou une simple chaîne de caractères
+                const uri = typeof item === 'object' ? item.uri : item;
+                const type = typeof item === 'object' ? item.type : '';
+                
+                // Détection fiable basée sur le type MIME ou l'extension
+                const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
                 const rotation = index % 2 === 0 ? '-1.5deg' : '1.5deg';
 
                 return (
                   <div key={index} style={{ backgroundColor: '#ffffff', padding: '8px 8px 14px 8px', borderRadius: '12px', boxShadow: '0 4px 8px rgba(0,0,0,0.15)', transform: `rotate(${rotation})` }}>
                     {isVideo ? (
-                      <video src={uri} style={{ width: '105px', height: '105px', objectFit: 'cover', borderRadius: currentRadius, display: 'block' }} autoPlay loop muted playsInline />
+                      <video src={uri} style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '8px', display: 'block' }} autoPlay loop muted playsInline />
                     ) : (
-                      <img src={uri} alt="Souvenir" style={{ width: '105px', height: '105px', objectFit: 'cover', borderRadius: currentRadius, display: 'block' }} />
+                      <ShapedImage uri={uri} shape={shape} />
                     )}
                   </div>
                 );

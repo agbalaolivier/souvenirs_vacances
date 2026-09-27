@@ -5,7 +5,6 @@ export default function ShapedImage({ uri, shape }) {
   const size = 120;
 
   if (Platform.OS === 'web') {
-    // Application d'un clip-path selon la forme choisie
     const getWebClipPath = () => {
       switch (shape) {
         case 'shape-heart':
@@ -27,28 +26,38 @@ export default function ShapedImage({ uri, shape }) {
         case 'shape-stamp':
           return 'polygon(0% 0%, 10% 5%, 20% 0%, 30% 5%, 40% 0%, 50% 5%, 60% 0%, 70% 5%, 80% 0%, 90% 5%, 100% 0%, 100% 100%, 90% 95%, 80% 100%, 70% 95%, 60% 100%, 50% 95%, 40% 100%, 30% 95%, 20% 100%, 10% 95%, 0% 100%)';
         default:
-          return shape === 'shape-square' ? '8px' : 'none';
+          return 'none';
       }
     };
 
     const isSquare = shape === 'shape-square';
+    const clipValue = getWebClipPath();
 
     return (
-      <View style={styles.webContainer}>
+      <div
+        style={{
+          width: size,
+          height: size,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+        }}
+      >
         <img
           src={uri}
           alt="Souvenir"
           style={{
-            width: size,
-            height: size,
+            width: '100%',
+            height: '100%',
             objectFit: 'cover',
             borderRadius: isSquare ? '8px' : '0px',
-            WebkitClipPath: isSquare ? 'none' : getWebClipPath(),
-            clipPath: isSquare ? 'none' : getWebClipPath(),
+            WebkitClipPath: isSquare ? 'none' : clipValue,
+            clipPath: isSquare ? 'none' : clipValue,
             display: 'block',
           }}
         />
-      </View>
+      </div>
     );
   }
 
@@ -62,12 +71,6 @@ export default function ShapedImage({ uri, shape }) {
 
 const styles = StyleSheet.create({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  webContainer: {
-    width: 120,
-    height: 120,
     alignItems: 'center',
     justifyContent: 'center',
   },

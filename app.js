@@ -100,8 +100,11 @@ export default function App() {
   const handleWebFileChange = (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const newUris = Array.from(files).map((file) => URL.createObjectURL(file));
-      setPhotos((prev) => [...prev, ...newUris]);
+      const newMedia = Array.from(files).map((file) => ({
+        uri: URL.createObjectURL(file),
+        type: file.type, // 'image/png', 'video/mp4', etc.
+      }));
+      setPhotos((prev) => [...prev, ...newMedia]);
     }
   };
 
