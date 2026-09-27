@@ -1,5 +1,5 @@
 import React from 'react';
-import { SHAPE_DEFS } from './shapePaths';
+import { SHAPE_DEFS } from './Shapepaths';
 
 // FIX : ce fichier porte le suffixe ".web.js" — Metro (le bundler d'Expo) le charge
 // automatiquement à la place de "ShapedImage.js" uniquement pour la cible web.
