@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { View, Text, StyleSheet, Platform, Image, TouchableOpacity, Modal, useWindowDimensions } from 'react-native';
 import { Video } from 'expo-av';
+import { LinearGradient } from 'expo-linear-gradient';
 import ShapedImage from './ShapedImage';
 
 export default function CardPreview({
@@ -13,13 +14,16 @@ export default function CardPreview({
   shape,
   message,
   theme = 'tropical',
-  onRemovePhoto, // Fonction pour supprimer un média par son index
+  onRemovePhoto,
+  onAiProcess, // Prop pour déclencher l'action magique IA
 }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
+  const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   const themesConfig = {
     tropical: {
       bgHeader: 'linear-gradient(135deg, #0284c7 0%, #0d9488 100%)',
+      colors: ['#0284c7', '#0d9488'],
       cardBg: '#ffffff',
       textColor: '#0f172a',
       accentColor: '#38bdf8',
@@ -27,6 +31,7 @@ export default function CardPreview({
     },
     noel: {
       bgHeader: 'linear-gradient(135deg, #881337 0%, #991b1b 100%)',
+      colors: ['#881337', '#991b1b'],
       cardBg: '#fffdfa',
       textColor: '#450a0a',
       accentColor: '#facc15',
@@ -34,6 +39,7 @@ export default function CardPreview({
     },
     romantique: {
       bgHeader: 'linear-gradient(135deg, #be185d 0%, #e11d48 100%)',
+      colors: ['#be185d', '#e11d48'],
       cardBg: '#fff1f2',
       textColor: '#881337',
       accentColor: '#fb7185',
@@ -41,6 +47,7 @@ export default function CardPreview({
     },
     chic: {
       bgHeader: 'linear-gradient(135deg, #18181b 0%, #27272a 100%)',
+      colors: ['#18181b', '#27272a'],
       cardBg: '#fafafa',
       textColor: '#18181b',
       accentColor: '#d4d4d8',
@@ -50,7 +57,7 @@ export default function CardPreview({
 
   const currentTheme = themesConfig[theme] || themesConfig.tropical;
 
-  // Gestion de la navigation Lightbox
+  // Gestion de la navigation Lightbox (partagée web + mobile)
   const handlePrev = (e) => {
     e.stopPropagation();
     setLightboxIndex((prev) => (prev > 0 ? prev - 1 : photos.length - 1));
@@ -63,7 +70,7 @@ export default function CardPreview({
 
   const activeItem = lightboxIndex !== null && photos[lightboxIndex] !== undefined ? photos[lightboxIndex] : null;
   const activeUri = activeItem ? (typeof activeItem === 'object' ? activeItem.uri : activeItem) : '';
-  const activeType = activeItem ? (typeof activeItem === 'object' ? activeItem.type : '') : '';
+  const activeType = activeItem ? (typeof activeItem === 'object' ? (activeItem.type || '') : '') : '';
   const isLightboxVideo = activeType.includes('video') || activeUri.endsWith('.mp4') || activeUri.endsWith('.webm') || activeUri.endsWith('.mov');
 
   if (Platform.OS === 'web') {
@@ -85,10 +92,6 @@ export default function CardPreview({
       >
         {/* En-tête */}
         <div style={{ background: currentTheme.bgHeader, padding: '24px', paddingTop: '45px', textAlign: 'center', position: 'relative' }}>
-          <div style={{ position: 'absolute', top: '14px', right: '14px', border: '1.5px solid rgba(255,255,255,0.6)', borderRadius: '6px', padding: '4px 8px', transform: 'rotate(4deg)', color: 'rgba(255,255,255,0.95)', fontSize: '9px', fontWeight: '800', letterSpacing: '1px' }}>
-            ✨ SOUVENIR UNIQUE
-          </div>
-
           {location ? (
             <div style={{ display: 'inline-block', backgroundColor: currentTheme.badgeBg, padding: '6px 14px', borderRadius: '20px', marginBottom: '14px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
               <div style={{ fontSize: '10px', fontWeight: '800', color: currentTheme.accentColor, textTransform: 'uppercase' }}>✨ coucou, je suis ici ! 📍</div>
@@ -116,7 +119,7 @@ export default function CardPreview({
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px', maxWidth: '460px', width: '100%' }}>
               {photos.map((item, index) => {
                 const uri = typeof item === 'object' ? item.uri : item;
-                const type = typeof item === 'object' ? item.type : '';
+                const type = typeof item === 'object' ? (item.type || '') : '';
                 const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
                 const rotation = index % 2 === 0 ? '-1.5deg' : '1.5deg';
 
@@ -176,17 +179,7 @@ export default function CardPreview({
                           playsInline
                         />
                       ) : (
-                        isSingle ? (
-                          <img
-                            src={uri}
-                            alt="Souvenir"
-                            style={{ width: mediaSize, height: mediaSize, objectFit: 'cover', borderRadius: '8px', display: 'block' }}
-                          />
-                        ) : (
-                          <div style={{ width: mediaSize, height: mediaSize, overflow: 'hidden', borderRadius: '8px' }}>
-                            <ShapedImage uri={uri} shape={shape} />
-                          </div>
-                        )
+                        <ShapedImage uri={uri} shape={shape} size={isSingle ? 220 : 120} />
                       )}
                     </div>
                   </div>
@@ -248,7 +241,7 @@ export default function CardPreview({
                 e.stopPropagation();
                 if (onRemovePhoto) {
                   onRemovePhoto(lightboxIndex);
-                  setLightboxIndex(null); // Ferme ou réinitialise
+                  setLightboxIndex(null);
                 }
               }}
               style={{
@@ -269,7 +262,40 @@ export default function CardPreview({
               🗑️ Supprimer
             </button>
 
-            {/* Flèche Précédent (si plus d'une photo) */}
+            {/* Bouton Magie IA (Design Pro Studio) */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onAiProcess) {
+                  onAiProcess(lightboxIndex);
+                } else {
+                  alert("Traitement IA en cours de préparation...");
+                }
+              }}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '200px',
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: '800',
+                cursor: 'pointer',
+                zIndex: 100000,
+                boxShadow: '0 4px 15px rgba(139, 92, 246, 0.5)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                letterSpacing: '0.5px',
+              }}
+            >
+              ✨ Magie IA
+            </button>
+
+            {/* Flèche Précédent */}
             {photos.length > 1 && (
               <button
                 onClick={handlePrev}
@@ -316,7 +342,7 @@ export default function CardPreview({
               </div>
             </div>
 
-            {/* Flèche Suivant (si plus d'une photo) */}
+            {/* Flèche Suivant */}
             {photos.length > 1 && (
               <button
                 onClick={handleNext}
@@ -344,36 +370,383 @@ export default function CardPreview({
     );
   }
 
-  // Rendu Mobile Natif
+  // ============================================================
+  // RENDU MOBILE NATIF (iOS / Android) — parité avec la version web
+  // ============================================================
+  const isSingleNative = photos.length === 1;
+  const nativeMediaSize = isSingleNative ? 200 : 110;
+  const lightboxMediaWidth = screenWidth * 0.88;
+  const lightboxMediaHeight = screenHeight * 0.55;
+
   return (
-    <View ref={cardRef} style={[styles.flyerCard, { backgroundColor: currentTheme.cardBg }]} collapsable={false}>
-      <View style={[styles.flyerHeader, { backgroundColor: '#0284c7' }]}>
-        <View style={styles.postmarkStamp}><Text style={styles.postmarkText}>✨ SOUVENIR UNIQUE</Text></View>
-        <View style={styles.mediaGallery}>
-          {photos.length === 0 ? (
-            <Text style={styles.placeholderText}>📸 Vos photos ici...</Text>
-          ) : (
-            photos.map((item, index) => {
+    <View ref={cardRef} style={[styles.card, { backgroundColor: currentTheme.cardBg }]} collapsable={false}>
+      {/* En-tête avec dégradé */}
+      <LinearGradient
+        colors={currentTheme.colors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        {location ? (
+          <View style={[styles.locationBadge, { backgroundColor: currentTheme.badgeBg }]}>
+            <Text style={[styles.locationLabel, { color: currentTheme.accentColor }]}>
+              ✨ coucou, je suis ici ! 📍
+            </Text>
+            <Text style={[styles.locationValue, { color: currentTheme.textColor }]}>{location}</Text>
+          </View>
+        ) : null}
+
+        <Text style={styles.title}>{title || 'Meilleurs Vœux !'}</Text>
+        <Text style={styles.subtitle}>
+          {period ? `${period} • ` : ''}{subtitle || 'Des moments inoubliables'}
+        </Text>
+      </LinearGradient>
+
+      {/* Galerie Photos / Vidéos */}
+      <View style={styles.gallery}>
+        {photos.length === 0 ? (
+          <View style={styles.emptyPlaceholder}>
+            <Text style={styles.emptyPlaceholderText}>📸 Vos photos ou vidéos apparaîtront ici...</Text>
+          </View>
+        ) : (
+          <View style={styles.galleryGrid}>
+            {photos.map((item, index) => {
               const uri = typeof item === 'object' ? item.uri : item;
+              const type = typeof item === 'object' ? (item.type || '') : '';
+              const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
+              const rotation = index % 2 === 0 ? '-1.5deg' : '1.5deg';
+
               return (
-                <View key={index} style={styles.polaroidFrame}>
-                  <Video source={{ uri }} style={{ width: 105, height: 105, borderRadius: 6 }} resizeMode="cover" />
+                <View
+                  key={index}
+                  style={[
+                    styles.mediaFrame,
+                    !isSingleNative && { transform: [{ rotate: rotation }] },
+                  ]}
+                >
+                  {/* Bouton de suppression rapide */}
+                  <TouchableOpacity
+                    style={styles.deleteBadge}
+                    onPress={() => onRemovePhoto && onRemovePhoto(index)}
+                  >
+                    <Text style={styles.deleteBadgeText}>✕</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity activeOpacity={0.85} onPress={() => setLightboxIndex(index)}>
+                    {isVideo ? (
+                      <Video
+                        source={{ uri }}
+                        style={{ width: nativeMediaSize, height: nativeMediaSize, borderRadius: 8 }}
+                        resizeMode="cover"
+                        isMuted
+                        useNativeControls={false}
+                      />
+                    ) : (
+                      <ShapedImage
+                        uri={uri}
+                        shape={shape}
+                        size={nativeMediaSize}
+                        instanceId={index}
+                      />
+                    )}
+                  </TouchableOpacity>
                 </View>
               );
-            })
-          )}
-        </View>
+            })}
+          </View>
+        )}
       </View>
+
+      {/* Message personnalisé */}
+      <View style={styles.messageWrap}>
+        <Text style={[styles.messageText, { color: currentTheme.textColor }]}>
+          {message || 'Plein de bonheur !'}
+        </Text>
+      </View>
+
+      {/* LIGHTBOX MOBILE */}
+      <Modal
+        visible={lightboxIndex !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLightboxIndex(null)}
+      >
+        <TouchableOpacity
+          style={styles.lightboxOverlay}
+          activeOpacity={1}
+          onPress={() => setLightboxIndex(null)}
+        >
+          {/* Bouton Fermer */}
+          <TouchableOpacity style={styles.lightboxClose} onPress={() => setLightboxIndex(null)}>
+            <Text style={styles.lightboxCloseText}>✕</Text>
+          </TouchableOpacity>
+
+          {/* Actions : Supprimer + Magie IA */}
+          <View style={styles.lightboxActionsRow}>
+            <TouchableOpacity
+              style={styles.lightboxDeleteBtn}
+              onPress={() => {
+                if (onRemovePhoto) {
+                  onRemovePhoto(lightboxIndex);
+                  setLightboxIndex(null);
+                }
+              }}
+            >
+              <Text style={styles.lightboxBtnText}>🗑️ Supprimer</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.lightboxAiBtn}
+              onPress={() => {
+                if (onAiProcess) onAiProcess(lightboxIndex);
+              }}
+            >
+              <Text style={styles.lightboxBtnText}>✨ Magie IA</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Flèche Précédent */}
+          {photos.length > 1 && (
+            <TouchableOpacity style={[styles.lightboxArrow, styles.lightboxArrowLeft]} onPress={handlePrev}>
+              <Text style={styles.lightboxArrowText}>‹</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Contenu (Image ou Vidéo) */}
+          <View style={styles.lightboxContent} pointerEvents="box-none">
+            {isLightboxVideo ? (
+              <Video
+                source={{ uri: activeUri }}
+                style={{ width: lightboxMediaWidth, height: lightboxMediaHeight }}
+                resizeMode="contain"
+                useNativeControls
+                shouldPlay
+              />
+            ) : (
+              <Image
+                source={{ uri: activeUri }}
+                style={{ width: lightboxMediaWidth, height: lightboxMediaHeight }}
+                resizeMode="contain"
+              />
+            )}
+            {photos.length > 0 && (
+              <Text style={styles.lightboxCounter}>
+                {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {photos.length}
+              </Text>
+            )}
+          </View>
+
+          {/* Flèche Suivant */}
+          {photos.length > 1 && (
+            <TouchableOpacity style={[styles.lightboxArrow, styles.lightboxArrowRight]} onPress={handleNext}>
+              <Text style={styles.lightboxArrowText}>›</Text>
+            </TouchableOpacity>
+          )}
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  flyerCard: { width: '100%', borderRadius: 20, overflow: 'hidden', elevation: 8 },
-  flyerHeader: { padding: 24, alignItems: 'center' },
-  postmarkStamp: { position: 'absolute', top: 14, right: 14, borderWidth: 1.5, borderColor: '#fff', borderRadius: 6, padding: 4 },
-  postmarkText: { color: '#fff', fontSize: 9, fontWeight: '800' },
-  mediaGallery: { padding: 20, alignItems: 'center' },
-  polaroidFrame: { backgroundColor: '#ffffff', padding: 8, borderRadius: 8 },
-  placeholderText: { color: '#64748b', fontSize: 13, fontWeight: '700' },
+  card: {
+    width: '100%',
+    borderRadius: 20,
+    overflow: 'hidden',
+    // Ombre iOS
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    // Ombre Android
+    elevation: 8,
+  },
+  header: {
+    padding: 24,
+    paddingTop: 32,
+    alignItems: 'center',
+  },
+  locationBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  locationLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+  },
+  locationValue: {
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 6,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 6,
+  },
+  subtitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#f8fafc',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  },
+  gallery: {
+    padding: 20,
+    minHeight: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyPlaceholder: {
+    width: '100%',
+    height: 130,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#cbd5e1',
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  emptyPlaceholderText: {
+    color: '#64748b',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  galleryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 14,
+    maxWidth: 460,
+  },
+  mediaFrame: {
+    position: 'relative',
+    backgroundColor: '#ffffff',
+    padding: 8,
+    paddingBottom: 14,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  deleteBadge: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: '#ef4444',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  deleteBadgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  messageWrap: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  messageText: {
+    fontSize: 16,
+    fontWeight: '800',
+    fontStyle: 'italic',
+    textAlign: 'center',
+  },
+  lightboxOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  lightboxClose: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 20,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  lightboxCloseText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  lightboxActionsRow: {
+    position: 'absolute',
+    top: 40,
+    left: 20,
+    flexDirection: 'row',
+    gap: 8,
+    zIndex: 10,
+  },
+  lightboxDeleteBtn: {
+    backgroundColor: '#ef4444',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  lightboxAiBtn: {
+    backgroundColor: '#a855f7',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  lightboxBtnText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  lightboxArrow: {
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 25,
+    width: 50,
+    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  lightboxArrowLeft: { left: 12 },
+  lightboxArrowRight: { right: 12 },
+  lightboxArrowText: {
+    color: '#ffffff',
+    fontSize: 26,
+    fontWeight: 'bold',
+  },
+  lightboxContent: {
+    alignItems: 'center',
+  },
+  lightboxCounter: {
+    color: '#ffffff',
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: '600',
+  },
 });

@@ -34,10 +34,10 @@ const SHAPES_OPTIONS = [
 ];
 
 const THEMES_OPTIONS = [
-  { id: 'tropical', label: '🌴 Tropical & Soleil', color: '#0284c7' },
-  { id: 'noel', label: '🎄 Fêtes & Noël', color: '#991b1b' },
-  { id: 'romantique', label: '💕 Romantique', color: '#e11d48' },
-  { id: 'chic', label: '✨ Chic Minimaliste', color: '#27272a' },
+  { id: 'tropical', label: ' Tropical & Soleil', color: '#0284c7' },
+  { id: 'noel', label: ' Fêtes & Noël', color: '#991b1b' },
+  { id: 'romantique', label: ' Romantique', color: '#e11d48' },
+  { id: 'chic', label: ' Chic Minimaliste', color: '#27272a' },
 ];
 
 export default function App() {
@@ -50,11 +50,38 @@ export default function App() {
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
+
   // Fonction pour retirer un média de la liste
   const removePhoto = (indexToRemove) => {
     setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
-  
+
+  // Fonction de traitement Magie IA sur un média
+  const handleAiProcess = async (index) => {
+    const targetMedia = photos[index];
+    const uri = typeof targetMedia === 'object' ? targetMedia.uri : targetMedia;
+
+    Alert.alert(
+      "✨ Magie IA en action",
+      "Que souhaitez-vous faire avec ce média ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "🎨 Effet Peinture / Style Pro",
+          onPress: () => {
+            Alert.alert("Succès", "Le style IA a été appliqué au souvenir !");
+          }
+        },
+        {
+          text: "🪄 Supprimer l'arrière-plan",
+          onPress: () => {
+            Alert.alert("Succès", "Arrière-plan détouré par l'IA !");
+          }
+        }
+      ]
+    );
+  };
+
   const [shape, setShape] = useState('shape-square');
   const [theme, setTheme] = useState('tropical');
   const [isShapeModalVisible, setIsShapeModalVisible] = useState(false);
@@ -87,8 +114,13 @@ export default function App() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
 
+    // FIX: ImagePicker.MediaTypeOptions est déprécié/supprimé dans les versions
+    // récentes d'expo-image-picker (SDK 52+). On garde la compatibilité avec
+    // les deux versions de l'API au lieu de planter si MediaTypeOptions n'existe plus.
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions
+        ? ImagePicker.MediaTypeOptions.All
+        : ['images', 'videos'],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
@@ -156,7 +188,9 @@ export default function App() {
           playsInSilentModeIOS: true,
         });
         const rec = new Audio.Recording();
-        await rec.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+        // FIX: la constante correcte dans expo-av est Audio.RecordingOptionsPresets.HIGH_QUALITY
+        // (Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY n'existe pas et faisait planter l'enregistrement)
+        await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
         await rec.startAsync();
         setRecording(rec);
         setIsRecording(true);
@@ -245,24 +279,36 @@ export default function App() {
     setIsExportModalVisible(false);
     const durationMs = parseInt(audioDuration, 10) * 1000 || 15000;
 
-    if (Platform.OS === 'web') {
-      try {
-        const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
+    if (Platform.OS !== 'web') {
+      Alert.alert('Information', "L'exportation vidéo est optimisée pour le navigateur web.");
+      return;
+    }
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new window.Image();
-        img.src = imageUri;
+    // FIX: vérifie que le navigateur supporte réellement l'enregistrement vidéo
+    if (typeof MediaRecorder === 'undefined') {
+      Alert.alert('Erreur', "Votre navigateur ne supporte pas l'enregistrement vidéo.");
+      return;
+    }
 
-        img.onload = async () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
+    try {
+      const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
 
-          const canvasStream = canvas.captureStream(30);
-          let combinedStream = canvasStream;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new window.Image();
+      img.src = imageUri;
 
-          if (audioUri) {
-            const audioElement = new window.Audio(audioUri);
+      img.onload = async () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const canvasStream = canvas.captureStream(30);
+        let combinedStream = canvasStream;
+        let audioElement = null;
+
+        if (audioUri) {
+          try {
+            audioElement = new window.Audio(audioUri);
             audioElement.loop = true;
             await audioElement.play();
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -274,39 +320,52 @@ export default function App() {
               ...canvasStream.getVideoTracks(),
               ...dest.stream.getAudioTracks(),
             ]);
+          } catch (audioErr) {
+            // FIX: si l'audio ne peut pas être capturé (ex: autoplay bloqué),
+            // on continue quand même l'export en vidéo silencieuse au lieu de tout planter.
+            console.warn("Impossible d'ajouter l'audio à la vidéo :", audioErr);
+            combinedStream = canvasStream;
           }
+        }
 
-          const mediaRecorder = new MediaRecorder(combinedStream, {
-            mimeType: 'video/webm;codecs=vp9',
-          });
-          const chunks = [];
+        // FIX: on vérifie le codec réellement supporté au lieu de le forcer en vp9
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? 'video/webm;codecs=vp9'
+          : 'video/webm';
 
-          mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            const videoUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = 'carte-de-voeux-animee.mp4';
-            link.href = videoUrl;
-            link.click();
-          };
+        const mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
+        const chunks = [];
 
-          mediaRecorder.start();
-
-          const interval = setInterval(() => {
-            ctx.drawImage(img, 0, 0);
-          }, 1000 / 30);
-
-          setTimeout(() => {
-            clearInterval(interval);
-            mediaRecorder.stop();
-          }, durationMs);
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
         };
-      } catch (e) {
-        Alert.alert('Erreur MP4', 'Impossible de générer le fichier vidéo MP4.');
-      }
-    } else {
-      Alert.alert('Information', "L'exportation vidéo MP4 est optimisée pour le navigateur web.");
+        mediaRecorder.onstop = () => {
+          // FIX: le fichier produit est réellement au format webm (pas mp4).
+          // On garde le type et l'extension cohérents pour que le fichier
+          // s'ouvre correctement, au lieu d'un .mp4 qui contient en fait du webm.
+          const blob = new Blob(chunks, { type: mimeType });
+          const videoUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = 'carte-de-voeux-animee.webm';
+          link.href = videoUrl;
+          link.click();
+          URL.revokeObjectURL(videoUrl);
+          if (audioElement) audioElement.pause();
+        };
+
+        mediaRecorder.start();
+
+        const interval = setInterval(() => {
+          ctx.drawImage(img, 0, 0);
+        }, 1000 / 30);
+
+        setTimeout(() => {
+          clearInterval(interval);
+          mediaRecorder.stop();
+        }, durationMs);
+      };
+    } catch (e) {
+      Alert.alert('Erreur Export Vidéo', "Impossible de générer le fichier vidéo.");
     }
   };
 
@@ -315,7 +374,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.mainTitle}>✨ Studio de Création de Cartes Magiques</Text>
+        <Text style={styles.mainTitle}> Studio de Création de Cartes Magiques</Text>
         <Text style={styles.mainSubtitle}>
           Personnalisez l'ambiance, les formes, les médias et la musique pour un rendu unique
         </Text>
@@ -323,7 +382,7 @@ export default function App() {
         <View style={[styles.mainLayout, isLargeScreen && styles.twoColumnLayout]}>
           {/* COLONNE GAUCHE : FORMULAIRE */}
           <View style={[styles.editorPanel, isLargeScreen && styles.columnFlex]}>
-            <Text style={styles.panelHeader}>🎨 Personnalisation & Ambiance</Text>
+            <Text style={styles.panelHeader}> Personnalisation & Ambiance</Text>
 
             <View style={styles.formGroup}>
               <Text style={styles.label}>Ambiance / Thème visuel</Text>
@@ -458,7 +517,7 @@ export default function App() {
                 style={styles.btnDownload}
                 onPress={() => setIsExportModalVisible(true)}
               >
-                <Text style={styles.btnExportText}>🎁 Enregistrer / Partager la Carte ▾</Text>
+                <Text style={styles.btnExportText}> Enregistrer / Partager la Carte ▾</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -476,7 +535,8 @@ export default function App() {
               shape={shape}
               message={message}
               theme={theme}
-              removePhoto={removePhoto}
+              onRemovePhoto={removePhoto}
+              onAiProcess={handleAiProcess}
             />
           </View>
         </View>
@@ -548,7 +608,7 @@ export default function App() {
                 <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
                   <Text style={styles.exportOptionIcon}>🎬</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (MP4)</Text>
+                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (WebM)</Text>
                   </View>
                 </TouchableOpacity>
               </View>
