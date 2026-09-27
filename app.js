@@ -50,6 +50,10 @@ export default function App() {
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
+  // Fonction pour retirer un média de la liste
+  const removePhoto = (indexToRemove) => {
+    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
   
   const [shape, setShape] = useState('shape-square');
   const [theme, setTheme] = useState('tropical');
@@ -67,8 +71,6 @@ export default function App() {
   const cardRef = useRef();
   const { width } = useWindowDimensions();
   const isLargeScreen = width >= 900;
-
-  const years = Array.from({ length: 10 }, (_, i) => (2026 - i).toString());
 
   const handlePeriodChange = (season, yearVal = selectedYear, dateVal = customDate) => {
     setSelectedSeason(season);
@@ -92,7 +94,10 @@ export default function App() {
     });
 
     if (!result.canceled) {
-      const selectedUris = result.assets.map((asset) => asset.uri);
+      const selectedUris = result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+      }));
       setPhotos((prev) => [...prev, ...selectedUris]);
     }
   };
@@ -102,7 +107,7 @@ export default function App() {
     if (files && files.length > 0) {
       const newMedia = Array.from(files).map((file) => ({
         uri: URL.createObjectURL(file),
-        type: file.type, // 'image/png', 'video/mp4', etc.
+        type: file.type,
       }));
       setPhotos((prev) => [...prev, ...newMedia]);
     }
@@ -320,7 +325,6 @@ export default function App() {
           <View style={[styles.editorPanel, isLargeScreen && styles.columnFlex]}>
             <Text style={styles.panelHeader}>🎨 Personnalisation & Ambiance</Text>
 
-            {/* Thème visuel */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Ambiance / Thème visuel</Text>
               <View style={styles.seasonRow}>
@@ -365,7 +369,6 @@ export default function App() {
               <TextInput style={styles.input} value={subtitle} onChangeText={setSubtitle} />
             </View>
 
-            {/* Sélection de photos ou vidéos */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Médias de la carte (Photos ou Vidéos)</Text>
               {Platform.OS === 'web' ? (
@@ -386,7 +389,6 @@ export default function App() {
               )}
             </View>
 
-            {/* Style de découpe */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Style de découpe des photos</Text>
               <TouchableOpacity
@@ -400,7 +402,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Musique et Audio */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Musique d'ambiance ou voix</Text>
               <View style={styles.audioRowActions}>
@@ -475,6 +476,7 @@ export default function App() {
               shape={shape}
               message={message}
               theme={theme}
+              removePhoto={removePhoto}
             />
           </View>
         </View>
