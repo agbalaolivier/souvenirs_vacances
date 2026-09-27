@@ -34,10 +34,15 @@ const SHAPES_OPTIONS = [
 ];
 
 const THEMES_OPTIONS = [
-  { id: 'tropical', label: ' Tropical & Soleil', color: '#0284c7' },
-  { id: 'noel', label: ' Fêtes & Noël', color: '#991b1b' },
-  { id: 'romantique', label: ' Romantique', color: '#e11d48' },
-  { id: 'chic', label: ' Chic Minimaliste', color: '#27272a' },
+  { id: 'tropical', label: 'Tropical & Soleil', color: '#0ea5e9' },
+  { id: 'noel', label: 'Fêtes & Noël', color: '#9f1239' },
+  { id: 'romantique', label: 'Romantique', color: '#db2777' },
+  { id: 'chic', label: 'Chic Minimaliste', color: '#52525b' },
+  { id: 'anniversaire', label: 'Anniversaire & Fête', color: '#a21caf' },
+  { id: 'automne', label: 'Automne Doré', color: '#b45309' },
+  { id: 'printemps', label: 'Printemps Frais', color: '#10b981' },
+  { id: 'luxe', label: 'Luxe Nocturne', color: '#d4af37' },
+  { id: 'fairepart', label: 'Faire-Part Élégant', color: '#c5a880' },
 ];
 
 export default function App() {
@@ -67,7 +72,7 @@ export default function App() {
       [
         { text: "Annuler", style: "cancel" },
         {
-          text: "🎨 Effet Peinture / Style Pro",
+          text: " Effet Peinture / Style Pro",
           onPress: () => {
             Alert.alert("Succès", "Le style IA a été appliqué au souvenir !");
           }
@@ -390,9 +395,10 @@ export default function App() {
                 {THEMES_OPTIONS.map((t) => (
                   <TouchableOpacity
                     key={t.id}
-                    style={[styles.seasonChip, theme === t.id && styles.seasonChipActive]}
+                    style={[styles.themeChip, theme === t.id && styles.seasonChipActive]}
                     onPress={() => setTheme(t.id)}
                   >
+                    <View style={[styles.themeDot, { backgroundColor: t.color }]} />
                     <Text style={[styles.seasonChipText, theme === t.id && styles.seasonChipTextActive]}>
                       {t.label}
                     </Text>
@@ -635,6 +641,8 @@ const styles = StyleSheet.create({
   input: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, borderRadius: 10, color: '#ffffff', padding: 12, fontSize: 13 },
   seasonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   seasonChip: { backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  themeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  themeDot: { width: 10, height: 10, borderRadius: 5 },
   seasonChipActive: { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
   seasonChipText: { color: '#94a3b8', fontSize: 11 },
   seasonChipTextActive: { color: '#ffffff', fontWeight: '700' },
