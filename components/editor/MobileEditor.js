@@ -92,7 +92,7 @@ export default function MobileEditor({
 
         <View style={styles.canvasHint}>
           <View style={styles.liveDot} />
-          <Text style={styles.canvasHintText}>{photos.length} photo{photos.length > 1 ? 's' : ''} dans le collage</Text>
+          <Text style={styles.canvasHintText}>{photos.length} photo{photos.length > 1 ? 's' : ''} dans la carte</Text>
           <Text style={styles.canvasHintText}>•</Text>
           <Text style={styles.canvasHintText}>Modifiable</Text>
         </View>
@@ -179,7 +179,9 @@ export default function MobileEditor({
       <View style={styles.toolbar}>
         {TOOLS.map((tool) => (
           <TouchableOpacity key={tool.id} style={[styles.toolButton, activeTool === tool.id && styles.toolButtonActive]} onPress={() => selectTool(tool.id)}>
-            <Text style={[styles.toolIcon, activeTool === tool.id && styles.toolIconActive]}>{tool.icon}</Text>
+            <View style={[styles.toolIconBubble, activeTool === tool.id && styles.toolIconBubbleActive]}>
+              <Text style={[styles.toolIcon, activeTool === tool.id && styles.toolIconActive]}>{tool.icon}</Text>
+            </View>
             <Text style={[styles.toolLabel, activeTool === tool.id && styles.toolLabelActive]}>{tool.label}</Text>
           </TouchableOpacity>
         ))}
@@ -229,12 +231,14 @@ const styles = StyleSheet.create({
   canvasHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 14 },
   liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#2f8b72' },
   canvasHintText: { color: '#77736e', fontSize: 12, fontWeight: '600' },
-  toolbar: { position: 'absolute', left: 10, right: 10, bottom: 12, minHeight: 76, borderRadius: 22, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e9e7e3', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 6, shadowColor: '#5c5147', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 8 },
-  toolButton: { alignItems: 'center', justifyContent: 'center', minWidth: 56, paddingVertical: 9, paddingHorizontal: 6, borderRadius: 15 },
-  toolButtonActive: { backgroundColor: '#e8f1ee' },
-  toolIcon: { color: '#5e625f', fontSize: 21, lineHeight: 25 },
-  toolIconActive: { color: '#356b60' },
-  toolLabel: { color: '#777b77', fontSize: 10, fontWeight: '700', marginTop: 3 },
+  toolbar: { position: 'absolute', left: 10, right: 10, bottom: 12, minHeight: 82, borderRadius: 24, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#e9e7e3', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', paddingHorizontal: 8, shadowColor: '#5c5147', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.12, shadowRadius: 18, elevation: 8 },
+  toolButton: { alignItems: 'center', justifyContent: 'center', minWidth: 58, paddingVertical: 7, paddingHorizontal: 7, borderRadius: 16 },
+  toolButtonActive: { backgroundColor: '#eef5f2' },
+  toolIconBubble: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#f1f2ef', alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+  toolIconBubbleActive: { backgroundColor: '#356b60' },
+  toolIcon: { color: '#4f5651', fontSize: 19, lineHeight: 23, fontWeight: '700' },
+  toolIconActive: { color: '#ffffff' },
+  toolLabel: { color: '#777b77', fontSize: 10, fontWeight: '800' },
   toolLabelActive: { color: '#356b60' },
   sheet: { position: 'absolute', left: 10, right: 10, bottom: 98, maxHeight: 330, borderRadius: 22, backgroundColor: '#ffffff', padding: 16, shadowColor: '#000000', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.18, shadowRadius: 18, elevation: 9, zIndex: 10 },
   sheetHandle: { alignSelf: 'center', width: 36, height: 4, borderRadius: 2, backgroundColor: '#d9d6d0', marginBottom: 12 },
