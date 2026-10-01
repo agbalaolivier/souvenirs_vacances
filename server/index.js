@@ -14,7 +14,24 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
-app.use(cors({ origin: process.env.FRONTEND_ORIGIN || '*' }));
+const allowedOrigins = new Set([
+  process.env.FRONTEND_ORIGIN,
+  'https://agbalaolivier.github.io',
+  'http://localhost:8081',
+  'http://localhost:8082',
+  'http://127.0.0.1:8081',
+  'http://127.0.0.1:8082',
+].filter(Boolean));
+
+app.use(cors({
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.has(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error('Origine non autorisée'));
+  },
+}));
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });

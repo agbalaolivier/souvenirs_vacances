@@ -200,13 +200,23 @@ export default function App() {
 
   const handleWebFileChange = (event) => {
     const files = event.target.files;
-    if (files && files.length > 0) {
-      const newMedia = Array.from(files).map((file) => ({
-        uri: URL.createObjectURL(file),
-        type: file.type,
-      }));
+    if (!files || files.length === 0) return;
+
+    const readAsDataUrl = (file) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    Promise.all(Array.from(files).map(async (file) => ({
+      uri: await readAsDataUrl(file),
+      type: file.type,
+    }))).then((newMedia) => {
       setPhotos((prev) => [...prev, ...newMedia]);
-    }
+    }).catch(() => {
+      Alert.alert('Erreur', 'Impossible de charger cette photo.');
+    });
   };
 
   const handleAudioFileChange = async (event) => {
