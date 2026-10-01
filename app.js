@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  ActivityIndicator,
   TextInput,
   TouchableOpacity,
   ScrollView,
@@ -16,6 +17,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import * as Sharing from 'expo-sharing';
 import { File, Paths } from 'expo-file-system';
+import { fetch as expoFetch } from 'expo/fetch';
 import { Audio } from 'expo-av';
 import { captureRef } from 'react-native-view-shot';
 
@@ -384,7 +386,8 @@ export default function App() {
         formData.append('audio', new File(audioUri));
       }
 
-      const response = await fetch(`${VIDEO_API_URL}/convert`, {
+      const request = Platform.OS === 'web' ? fetch : expoFetch;
+      const response = await request(`${VIDEO_API_URL}/convert`, {
         method: 'POST',
         body: formData,
       });
@@ -412,7 +415,8 @@ export default function App() {
         });
       }
     } catch (e) {
-      Alert.alert('Erreur Export Vidéo', "Impossible de générer le fichier vidéo.");
+      const details = e?.message ? `\n\n${e.message}` : '';
+      Alert.alert('Erreur Export Vidéo', `Impossible de générer le fichier vidéo.${details}`);
     } finally {
       setIsExporting(false);
     }
@@ -759,11 +763,11 @@ export default function App() {
                   </View>
                 </TouchableOpacity>
 
-                {Platform.OS === 'web' && hasCustomAudio && (
+                {hasCustomAudio && (
                   <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
                     <Text style={styles.exportOptionIcon}>🎬</Text>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.exportOptionTitle}>Générer la vidéo web avec audio</Text>
+                      <Text style={styles.exportOptionTitle}>Générer la vidéo MP4 avec audio</Text>
                     </View>
                   </TouchableOpacity>
                 )}
@@ -771,6 +775,12 @@ export default function App() {
             </View>
           </View>
         </Modal>
+        {isExporting && (
+          <View style={styles.exportingOverlay}>
+            <ActivityIndicator size="large" color="#38bdf8" />
+            <Text style={styles.exportingText}>Génération de la vidéo MP4...</Text>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -822,6 +832,8 @@ const styles = StyleSheet.create({
   mobileStickyPreview: { alignSelf: 'stretch', marginHorizontal: -20, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 7, backgroundColor: '#0f172a', borderBottomWidth: 1, borderBottomColor: '#334155', zIndex: 20, elevation: 8 },
   previewTitle: { fontSize: 12, fontWeight: '700', color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  exportingOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.88)', alignItems: 'center', justifyContent: 'center', zIndex: 100 },
+  exportingText: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginTop: 14 },
   modalContent: { width: '100%', maxWidth: 480, backgroundColor: '#1e293b', borderRadius: 18, padding: 22, borderWidth: 1, borderColor: '#334155' },
   dateModalScrollView: { flex: 1, width: '100%' },
   dateModalScrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 12 },
