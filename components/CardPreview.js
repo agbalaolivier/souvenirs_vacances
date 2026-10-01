@@ -112,6 +112,7 @@ const themesConfig = {
     borderColor: '#d4b9a8',
     badgeBg: 'rgba(252, 248, 242, 0.88)',
     backgroundImage: printempsReference,
+    contentBackground: 'rgba(252, 248, 242, 0.97)',
     font: { web: "'Cormorant Garamond', Georgia, serif", ios: 'Georgia', android: 'serif' },
     letterSpacing: 1,
     fontWeight: '400',
@@ -248,7 +249,7 @@ export default function CardPreview({
           </>
         )}
 
-        <div style={{ position: 'relative', zIndex: 3, padding: compact ? '8px' : '20px' }}>
+        <div style={{ position: 'relative', zIndex: 3, padding: compact ? '8px' : '20px', backgroundColor: currentTheme.contentBackground || 'transparent', borderRadius: `${Math.max(currentTheme.cornerRadius - 3, 2)}px` }}>
           {/* En-tête */}
           <div style={{ textAlign: 'center', marginBottom: compact ? '5px' : '20px', paddingTop: compact ? '0' : '10px' }}>
             {location ? (
