@@ -30,6 +30,7 @@ export default function MobileEditor({
   location,
   photos,
   shape,
+  shapes,
   theme,
   themes,
   audioName,
@@ -41,6 +42,7 @@ export default function MobileEditor({
   onSubtitleChange,
   onMessageChange,
   onThemeChange,
+  onShapeChange,
   onPickImages,
   onWebMediaChange,
   onAudioFileChange,
@@ -121,13 +123,25 @@ export default function MobileEditor({
             </View>
           )}
           {activeTool === 'style' && (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeRow}>
-              {themes.map((item) => (
-                <TouchableOpacity key={item.id} style={[styles.themeItem, theme === item.id && styles.themeItemActive]} onPress={() => onThemeChange(item.id)}>
-                  <View style={[styles.themeSwatch, { backgroundColor: item.color }]} />
-                  <Text style={[styles.themeLabel, theme === item.id && styles.themeLabelActive]}>{item.label}</Text>
-                </TouchableOpacity>
-              ))}
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.stylePanel}>
+              <Text style={styles.optionTitle}>Ambiance</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeRow}>
+                {themes.map((item) => (
+                  <TouchableOpacity key={item.id} style={[styles.themeItem, theme === item.id && styles.themeItemActive]} onPress={() => onThemeChange(item.id)}>
+                    <View style={[styles.themeSwatch, { backgroundColor: item.color }]} />
+                    <Text style={[styles.themeLabel, theme === item.id && styles.themeLabelActive]}>{item.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              <Text style={styles.optionTitle}>Forme des photos</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shapeRow}>
+                {shapes.map((item) => (
+                  <TouchableOpacity key={item.id} style={[styles.shapeItem, shape === item.id && styles.shapeItemActive]} onPress={() => onShapeChange(item.id)}>
+                    <Text style={styles.shapeIcon}>{item.icon}</Text>
+                    <Text style={[styles.themeLabel, shape === item.id && styles.themeLabelActive]}>{item.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </ScrollView>
           )}
           {activeTool === 'text' && (
@@ -234,11 +248,17 @@ const styles = StyleSheet.create({
   secondaryActionText: { color: '#2f6258', fontSize: 14, fontWeight: '800' },
   helperText: { color: '#817c75', fontSize: 12, lineHeight: 17, textAlign: 'center' },
   themeRow: { gap: 10, paddingBottom: 4 },
+  stylePanel: { gap: 8, paddingBottom: 4 },
+  optionTitle: { color: '#77736e', fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },
   themeItem: { width: 88, alignItems: 'center', padding: 8, borderRadius: 13 },
   themeItemActive: { backgroundColor: '#edf2ef' },
   themeSwatch: { width: 42, height: 42, borderRadius: 21, marginBottom: 7 },
   themeLabel: { color: '#77736e', fontSize: 10, fontWeight: '700', textAlign: 'center' },
   themeLabelActive: { color: '#2f6258' },
+  shapeRow: { gap: 8, paddingBottom: 4 },
+  shapeItem: { width: 82, minHeight: 64, alignItems: 'center', justifyContent: 'center', padding: 7, borderRadius: 13, backgroundColor: '#fafaf9' },
+  shapeItemActive: { backgroundColor: '#e8f1ee' },
+  shapeIcon: { color: '#4e5752', fontSize: 22, lineHeight: 26, marginBottom: 3 },
   field: { borderWidth: 1, borderColor: '#e3dfd9', borderRadius: 12, paddingHorizontal: 13, paddingVertical: 11, color: '#2d2a27', fontSize: 14, backgroundColor: '#fbfaf8' },
   messageField: { minHeight: 70, textAlignVertical: 'top' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(35, 42, 40, 0.88)', alignItems: 'center', justifyContent: 'center', zIndex: 20 },

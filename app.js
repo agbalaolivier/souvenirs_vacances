@@ -468,15 +468,19 @@ export default function App() {
         location={location}
         photos={photos}
         shape={shape}
+        shapes={SHAPES_OPTIONS}
         theme={theme}
         themes={THEMES_OPTIONS}
         audioName={audioName}
         isRecording={isRecording}
         isExporting={isExporting}
+        isExportModalVisible={isExportModalVisible}
+        hasCustomAudio={hasCustomAudio}
         onTitleChange={setTitle}
         onSubtitleChange={setSubtitle}
         onMessageChange={setMessage}
         onThemeChange={setTheme}
+        onShapeChange={setShape}
         onPickImages={pickImagesMobile}
         onWebMediaChange={handleWebFileChange}
         onAudioFileChange={handleAudioFileChange}
@@ -485,6 +489,9 @@ export default function App() {
         onRemovePhoto={removePhoto}
         onAiProcess={handleAiProcess}
         onOpenExport={() => setIsExportModalVisible(true)}
+        onCloseExport={() => setIsExportModalVisible(false)}
+        onDownloadJPG={downloadImageJPG}
+        onExportMP4={exportAsMP4}
       />
     );
   }
