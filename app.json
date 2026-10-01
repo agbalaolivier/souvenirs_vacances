@@ -20,6 +20,9 @@
     "web": {
       "favicon": "./assets/app_logo.jpg"
     },
+    "experiments": {
+      "baseUrl": "/souvenirs_vacances"
+    },
     "plugins": [
       "expo-sharing"
     ]
