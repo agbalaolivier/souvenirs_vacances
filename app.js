@@ -126,6 +126,7 @@ export default function App() {
   const [isShapeModalVisible, setIsShapeModalVisible] = useState(false);
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [audioUri, setAudioUri] = useState(null);
   const [audioName, setAudioName] = useState('');
@@ -298,7 +299,7 @@ export default function App() {
       const loc = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.BestForNavigation,
       });
-      let addressParts = [];
+      let cityName = '';
 
       if (Platform.OS !== 'web') {
         try {
@@ -309,28 +310,25 @@ export default function App() {
 
           if (geocode.length > 0) {
             const place = geocode[0];
-            const street = [place.streetNumber, place.street].filter(Boolean).join(' ') || place.name;
-            addressParts = [
-              street,
-              place.district,
-              place.city,
-              place.region,
-              place.postalCode,
-              place.country,
-            ].filter((part, index, parts) => part && parts.indexOf(part) === index);
+            cityName = place.city || place.town || place.village || place.subregion || place.region || '';
           }
         } catch {
-          addressParts = [];
+          cityName = '';
+        }
+      } else {
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&accept-language=fr&lat=${loc.coords.latitude}&lon=${loc.coords.longitude}`,
+          );
+          const reverseGeocode = await response.json();
+          const address = reverseGeocode.address || {};
+          cityName = address.city || address.town || address.village || address.municipality || address.county || '';
+        } catch {
+          cityName = '';
         }
       }
 
-      const accuracy = loc.coords.accuracy;
-      const accuracyLabel = typeof accuracy === 'number'
-        ? `± ${Math.max(1, Math.round(accuracy))} m`
-        : 'précision indisponible';
-      const coordinates = `${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}`;
-      const address = addressParts.length > 0 ? `${addressParts.join(', ')} · ` : '';
-      setLocation(`${address}${coordinates} (${accuracyLabel})`);
+      setLocation(cityName || 'Ville non disponible');
     } catch {
       setLocation('Position non disponible');
     }
@@ -338,7 +336,9 @@ export default function App() {
 
   const downloadImageJPG = async () => {
     setIsExportModalVisible(false);
+    setIsExporting(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 50));
       const uri = await captureRef(cardRef, { format: 'jpg', quality: 0.95 });
       if (Platform.OS === 'web') {
         const link = document.createElement('a');
@@ -355,6 +355,8 @@ export default function App() {
       }
     } catch (err) {
       Alert.alert('Erreur', "Échec de l'enregistrement de l'image.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -366,7 +368,9 @@ export default function App() {
       return;
     }
 
+    setIsExporting(true);
     try {
+      await new Promise((resolve) => setTimeout(resolve, 50));
       const imageUri = await captureRef(cardRef, { format: 'jpg', quality: 0.95 });
       const formData = new FormData();
 
@@ -409,6 +413,8 @@ export default function App() {
       }
     } catch (e) {
       Alert.alert('Erreur Export Vidéo', "Impossible de générer le fichier vidéo.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -428,6 +434,7 @@ export default function App() {
         theme={theme}
         onRemovePhoto={removePhoto}
         onAiProcess={handleAiProcess}
+        hideControls={isExporting}
         compact={compact}
       />
     </View>

@@ -167,6 +167,7 @@ export default function CardPreview({
   theme = 'tropical',
   onRemovePhoto,
   onAiProcess,
+  hideControls = false,
   compact = false,
 }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
@@ -297,7 +298,7 @@ export default function CardPreview({
                       }}
                     >
                       {/* Bouton suppression */}
-                      {!compact && <button
+                      {!compact && !hideControls && <button
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onRemovePhoto) onRemovePhoto(index);
@@ -605,7 +606,7 @@ export default function CardPreview({
                     key={index}
                     style={[styles.mediaFrame, !isSingleNative && { transform: [{ rotate: rotation }] }]}
                   >
-                    {!compact && <TouchableOpacity
+                    {!compact && !hideControls && <TouchableOpacity
                       style={styles.deleteBadge}
                       onPress={() => onRemovePhoto && onRemovePhoto(index)}
                     >
