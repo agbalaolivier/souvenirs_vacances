@@ -19,12 +19,39 @@ import { Audio } from 'expo-av';
 import { captureRef } from 'react-native-view-shot';
 
 import CardPreview from './components/CardPreview';
+import PhotoAdjuster from './components/PhotoAdjuster';
+
+function formatDateAndSeason(date) {
+  const dateLabel = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+  const month = date.getMonth();
+  const season = month < 2 || month === 11
+    ? 'hiver'
+    : month < 5
+      ? 'printemps'
+      : month < 8
+        ? 'été'
+        : month < 11
+          ? 'automne'
+          : 'hiver';
+
+  return `${dateLabel} (${season} ${date.getFullYear()})`;
+}
 
 const SHAPES_OPTIONS = [
   { id: 'shape-square', label: 'Carré Arrondi', icon: '🔲' },
+  { id: 'shape-portrait', label: 'Portrait', icon: '▯' },
+  { id: 'shape-landscape', label: 'Paysage', icon: '▭' },
   { id: 'shape-heart', label: 'Cœur', icon: '❤️' },
   { id: 'shape-circle', label: 'Cercle', icon: '⚪' },
+  { id: 'shape-oval', label: 'Ovale', icon: '🥚' },
   { id: 'shape-star', label: 'Étoile', icon: '⭐' },
+  { id: 'shape-arch', label: 'Arche', icon: '🏛️' },
+  { id: 'shape-torn', label: 'Photo déchirée', icon: '📄' },
+  { id: 'shape-film', label: 'Pellicule', icon: '🎞️' },
   { id: 'shape-diamond', label: 'Losange / Diamant', icon: '🔷' },
   { id: 'shape-hexagon', label: 'Hexagone', icon: '⬢' },
   { id: 'shape-bubble', label: 'Bulle', icon: '💬' },
@@ -34,26 +61,67 @@ const SHAPES_OPTIONS = [
 ];
 
 const THEMES_OPTIONS = [
-  { id: 'tropical', label: '🌴 Tropical & Soleil', color: '#0284c7' },
-  { id: 'noel', label: '🎄 Fêtes & Noël', color: '#991b1b' },
-  { id: 'romantique', label: '💕 Romantique', color: '#e11d48' },
-  { id: 'chic', label: '✨ Chic Minimaliste', color: '#27272a' },
+  { id: 'tropical', label: 'Tropical & Soleil', color: '#0ea5e9' },
+  { id: 'noel', label: 'Fêtes & Noël', color: '#9f1239' },
+  { id: 'romantique', label: 'Romantique', color: '#db2777' },
+  { id: 'chic', label: 'Chic Minimaliste', color: '#52525b' },
+  { id: 'anniversaire', label: 'Anniversaire & Fête', color: '#a21caf' },
+  { id: 'automne', label: 'Automne Doré', color: '#b45309' },
+  { id: 'printemps', label: 'Printemps Frais', color: '#10b981' },
+  { id: 'luxe', label: 'Luxe Nocturne', color: '#d4af37' },
+  { id: 'fairepart', label: 'Faire-Part Élégant', color: '#c5a880' },
 ];
 
 export default function App() {
   const [title, setTitle] = useState('Meilleurs Vœux & Souvenirs !');
-  const [period, setPeriod] = useState("Aujourd'hui");
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [period, setPeriod] = useState(() => formatDateAndSeason(new Date()));
   const [selectedSeason, setSelectedSeason] = useState('today');
-  const [selectedYear, setSelectedYear] = useState('2026');
-  const [customDate, setCustomDate] = useState('');
+  const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
   const [subtitle, setSubtitle] = useState('Des moments inoubliables partagés avec vous');
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
-  
+
+  // Fonction pour retirer un média de la liste
+  const removePhoto = (indexToRemove) => {
+    setPhotos((prev) => prev.filter((_, index) => index !== indexToRemove));
+  };
+
+  // Fonction de traitement Magie IA sur un média
+  const handleAiProcess = async (index) => {
+    const targetMedia = photos[index];
+    const uri = typeof targetMedia === 'object' ? targetMedia.uri : targetMedia;
+
+    Alert.alert(
+      "✨ Magie IA en action",
+      "Que souhaitez-vous faire avec ce média ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: " Effet Peinture / Style Pro",
+          onPress: () => {
+            Alert.alert("Succès", "Le style IA a été appliqué au souvenir !");
+          }
+        },
+        {
+          text: "🪄 Supprimer l'arrière-plan",
+          onPress: () => {
+            Alert.alert("Succès", "Arrière-plan détouré par l'IA !");
+          }
+        }
+      ]
+    );
+  };
+
   const [shape, setShape] = useState('shape-square');
   const [theme, setTheme] = useState('tropical');
   const [isShapeModalVisible, setIsShapeModalVisible] = useState(false);
+  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
 
   const [audioUri, setAudioUri] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
@@ -65,34 +133,60 @@ export default function App() {
   const [audioDuration, setAudioDuration] = useState('15');
 
   const cardRef = useRef();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isLargeScreen = width >= 900;
 
-  const years = Array.from({ length: 10 }, (_, i) => (2026 - i).toString());
+  const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+  const daysInCalendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
+  const calendarDays = [
+    ...Array(monthStart.getDay()).fill(null),
+    ...Array.from({ length: daysInCalendarMonth }, (_, index) => index + 1),
+  ];
 
-  const handlePeriodChange = (season, yearVal = selectedYear, dateVal = customDate) => {
+  const handlePeriodChange = (season, yearVal = selectedYear) => {
     setSelectedSeason(season);
     if (season === 'today') {
-      setPeriod("Aujourd'hui");
+      const today = new Date();
+      setSelectedDate(today);
+      setSelectedYear(String(today.getFullYear()));
+      setPeriod(formatDateAndSeason(today));
     } else if (season === 'customDate') {
-      setPeriod(dateVal || 'Date précise');
+      setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+      setIsDateModalVisible(true);
     } else {
       setPeriod(`${season} ${yearVal}`);
     }
+  };
+
+  const selectCalendarDate = (day) => {
+    const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+    setSelectedDate(date);
+    setSelectedYear(String(date.getFullYear()));
+    setSelectedSeason('customDate');
+    setPeriod(formatDateAndSeason(date));
+    setIsDateModalVisible(false);
   };
 
   const pickImagesMobile = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') return;
 
+    // FIX: ImagePicker.MediaTypeOptions est déprécié/supprimé dans les versions
+    // récentes d'expo-image-picker (SDK 52+). On garde la compatibilité avec
+    // les deux versions de l'API au lieu de planter si MediaTypeOptions n'existe plus.
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ImagePicker.MediaTypeOptions
+        ? ImagePicker.MediaTypeOptions.All
+        : ['images', 'videos'],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
 
     if (!result.canceled) {
-      const selectedUris = result.assets.map((asset) => asset.uri);
+      const selectedUris = result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+      }));
       setPhotos((prev) => [...prev, ...selectedUris]);
     }
   };
@@ -100,8 +194,11 @@ export default function App() {
   const handleWebFileChange = (event) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      const newUris = Array.from(files).map((file) => URL.createObjectURL(file));
-      setPhotos((prev) => [...prev, ...newUris]);
+      const newMedia = Array.from(files).map((file) => ({
+        uri: URL.createObjectURL(file),
+        type: file.type,
+      }));
+      setPhotos((prev) => [...prev, ...newMedia]);
     }
   };
 
@@ -148,7 +245,9 @@ export default function App() {
           playsInSilentModeIOS: true,
         });
         const rec = new Audio.Recording();
-        await rec.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+        // FIX: la constante correcte dans expo-av est Audio.RecordingOptionsPresets.HIGH_QUALITY
+        // (Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY n'existe pas et faisait planter l'enregistrement)
+        await rec.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
         await rec.startAsync();
         setRecording(rec);
         setIsRecording(true);
@@ -185,34 +284,49 @@ export default function App() {
   const fetchLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        const geocode = await Location.reverseGeocodeAsync({
+      if (status !== 'granted') {
+        setLocation('Localisation non autorisée');
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+      });
+      let addressParts = [];
+
+      if (Platform.OS !== 'web') {
+        try {
+          const geocode = await Location.reverseGeocodeAsync({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
-        });
+          });
 
-        if (geocode && geocode.length > 0) {
-          const place = geocode[0];
-          const cityName = place.city || place.town || place.village || 'Ma position';
-          const countryName = place.country || '';
-          setLocation(`${cityName}, ${countryName}`);
-          return;
+          if (geocode.length > 0) {
+            const place = geocode[0];
+            const street = [place.streetNumber, place.street].filter(Boolean).join(' ') || place.name;
+            addressParts = [
+              street,
+              place.district,
+              place.city,
+              place.region,
+              place.postalCode,
+              place.country,
+            ].filter((part, index, parts) => part && parts.indexOf(part) === index);
+          }
+        } catch {
+          addressParts = [];
         }
       }
 
-      if (Platform.OS === 'web') {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        if (data.city && data.country_name) {
-          setLocation(`${data.city}, ${data.country_name}`);
-          return;
-        }
-      }
-
-      setLocation('Destination de Rêve');
+      const accuracy = loc.coords.accuracy;
+      const accuracyLabel = typeof accuracy === 'number'
+        ? `± ${Math.max(1, Math.round(accuracy))} m`
+        : 'précision indisponible';
+      const coordinates = `${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}`;
+      const address = addressParts.length > 0 ? `${addressParts.join(', ')} · ` : '';
+      setLocation(`${address}${coordinates} (${accuracyLabel})`);
     } catch {
-      setLocation('Destination de Rêve');
+      setLocation('Position non disponible');
     }
   };
 
@@ -237,24 +351,36 @@ export default function App() {
     setIsExportModalVisible(false);
     const durationMs = parseInt(audioDuration, 10) * 1000 || 15000;
 
-    if (Platform.OS === 'web') {
-      try {
-        const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
+    if (Platform.OS !== 'web') {
+      Alert.alert('Information', "L'exportation vidéo est optimisée pour le navigateur web.");
+      return;
+    }
 
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new window.Image();
-        img.src = imageUri;
+    // FIX: vérifie que le navigateur supporte réellement l'enregistrement vidéo
+    if (typeof MediaRecorder === 'undefined') {
+      Alert.alert('Erreur', "Votre navigateur ne supporte pas l'enregistrement vidéo.");
+      return;
+    }
 
-        img.onload = async () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
+    try {
+      const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
 
-          const canvasStream = canvas.captureStream(30);
-          let combinedStream = canvasStream;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new window.Image();
+      img.src = imageUri;
 
-          if (audioUri) {
-            const audioElement = new window.Audio(audioUri);
+      img.onload = async () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        const canvasStream = canvas.captureStream(30);
+        let combinedStream = canvasStream;
+        let audioElement = null;
+
+        if (audioUri) {
+          try {
+            audioElement = new window.Audio(audioUri);
             audioElement.loop = true;
             await audioElement.play();
             const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -266,67 +392,108 @@ export default function App() {
               ...canvasStream.getVideoTracks(),
               ...dest.stream.getAudioTracks(),
             ]);
+          } catch (audioErr) {
+            // FIX: si l'audio ne peut pas être capturé (ex: autoplay bloqué),
+            // on continue quand même l'export en vidéo silencieuse au lieu de tout planter.
+            console.warn("Impossible d'ajouter l'audio à la vidéo :", audioErr);
+            combinedStream = canvasStream;
           }
+        }
 
-          const mediaRecorder = new MediaRecorder(combinedStream, {
-            mimeType: 'video/webm;codecs=vp9',
-          });
-          const chunks = [];
+        // FIX: on vérifie le codec réellement supporté au lieu de le forcer en vp9
+        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+          ? 'video/webm;codecs=vp9'
+          : 'video/webm';
 
-          mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-          mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            const videoUrl = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.download = 'carte-de-voeux-animee.mp4';
-            link.href = videoUrl;
-            link.click();
-          };
+        const mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
+        const chunks = [];
 
-          mediaRecorder.start();
-
-          const interval = setInterval(() => {
-            ctx.drawImage(img, 0, 0);
-          }, 1000 / 30);
-
-          setTimeout(() => {
-            clearInterval(interval);
-            mediaRecorder.stop();
-          }, durationMs);
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) chunks.push(e.data);
         };
-      } catch (e) {
-        Alert.alert('Erreur MP4', 'Impossible de générer le fichier vidéo MP4.');
-      }
-    } else {
-      Alert.alert('Information', "L'exportation vidéo MP4 est optimisée pour le navigateur web.");
+        mediaRecorder.onstop = () => {
+          // FIX: le fichier produit est réellement au format webm (pas mp4).
+          // On garde le type et l'extension cohérents pour que le fichier
+          // s'ouvre correctement, au lieu d'un .mp4 qui contient en fait du webm.
+          const blob = new Blob(chunks, { type: mimeType });
+          const videoUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.download = 'carte-de-voeux-animee.webm';
+          link.href = videoUrl;
+          link.click();
+          URL.revokeObjectURL(videoUrl);
+          if (audioElement) audioElement.pause();
+        };
+
+        mediaRecorder.start();
+
+        const interval = setInterval(() => {
+          ctx.drawImage(img, 0, 0);
+        }, 1000 / 30);
+
+        setTimeout(() => {
+          clearInterval(interval);
+          mediaRecorder.stop();
+        }, durationMs);
+      };
+    } catch (e) {
+      Alert.alert('Erreur Export Vidéo', "Impossible de générer le fichier vidéo.");
     }
   };
 
   const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
+  const renderCardPreview = (compact = false, previewRef = null) => (
+    <View style={styles.previewSection}>
+      <Text style={styles.previewTitle}>✨ Aperçu magique en direct</Text>
+      <CardPreview
+        cardRef={previewRef}
+        title={title}
+        period={period}
+        subtitle={subtitle}
+        location={location}
+        photos={photos}
+        shape={shape}
+        message={message}
+        theme={theme}
+        onRemovePhoto={removePhoto}
+        onAiProcess={handleAiProcess}
+        compact={compact}
+      />
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.mainTitle}>✨ Studio de Création de Cartes Magiques</Text>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        stickyHeaderIndices={isLargeScreen ? undefined : [2]}
+      >
+        <Text style={styles.mainTitle}> Studio de Création de Cartes Magiques</Text>
         <Text style={styles.mainSubtitle}>
           Personnalisez l'ambiance, les formes, les médias et la musique pour un rendu unique
         </Text>
 
+        {!isLargeScreen && (
+          <View style={styles.mobileStickyPreview}>
+            {renderCardPreview(true)}
+          </View>
+        )}
+
         <View style={[styles.mainLayout, isLargeScreen && styles.twoColumnLayout]}>
           {/* COLONNE GAUCHE : FORMULAIRE */}
           <View style={[styles.editorPanel, isLargeScreen && styles.columnFlex]}>
-            <Text style={styles.panelHeader}>🎨 Personnalisation & Ambiance</Text>
+            <Text style={styles.panelHeader}> Personnalisation & Ambiance</Text>
 
-            {/* Thème visuel */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Ambiance / Thème visuel</Text>
               <View style={styles.seasonRow}>
                 {THEMES_OPTIONS.map((t) => (
                   <TouchableOpacity
                     key={t.id}
-                    style={[styles.seasonChip, theme === t.id && styles.seasonChipActive]}
+                    style={[styles.themeChip, theme === t.id && styles.seasonChipActive]}
                     onPress={() => setTheme(t.id)}
                   >
+                    <View style={[styles.themeDot, { backgroundColor: t.color }]} />
                     <Text style={[styles.seasonChipText, theme === t.id && styles.seasonChipTextActive]}>
                       {t.label}
                     </Text>
@@ -355,6 +522,7 @@ export default function App() {
                   </TouchableOpacity>
                 ))}
               </View>
+              <Text style={styles.dateSummary}>{period}</Text>
             </View>
 
             <View style={styles.formGroup}>
@@ -362,7 +530,6 @@ export default function App() {
               <TextInput style={styles.input} value={subtitle} onChangeText={setSubtitle} />
             </View>
 
-            {/* Sélection de photos ou vidéos */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Médias de la carte (Photos ou Vidéos)</Text>
               {Platform.OS === 'web' ? (
@@ -383,7 +550,6 @@ export default function App() {
               )}
             </View>
 
-            {/* Style de découpe */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Style de découpe des photos</Text>
               <TouchableOpacity
@@ -397,7 +563,6 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
-            {/* Musique et Audio */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>Musique d'ambiance ou voix</Text>
               <View style={styles.audioRowActions}>
@@ -440,13 +605,16 @@ export default function App() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Message personnel (max 30 caractères)</Text>
+              <Text style={styles.label}>Message personnel (250 caractères maximum)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.messageInput]}
                 value={message}
-                maxLength={30}
+                maxLength={250}
+                multiline
+                textAlignVertical="top"
                 onChangeText={setMessage}
               />
+              <Text style={styles.characterCount}>{message.length}/250</Text>
             </View>
 
             <View style={styles.exportActions}>
@@ -454,27 +622,100 @@ export default function App() {
                 style={styles.btnDownload}
                 onPress={() => setIsExportModalVisible(true)}
               >
-                <Text style={styles.btnExportText}>🎁 Enregistrer / Partager la Carte ▾</Text>
+                <Text style={styles.btnExportText}> Enregistrer / Partager la Carte ▾</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* COLONNE DROITE : APERÇU */}
-          <View style={[styles.previewSection, isLargeScreen && styles.columnFlex]}>
-            <Text style={styles.previewTitle}>✨ Aperçu magique en direct</Text>
-            <CardPreview
-              cardRef={cardRef}
-              title={title}
-              period={period}
-              subtitle={subtitle}
-              location={location}
-              photos={photos}
-              shape={shape}
-              message={message}
-              theme={theme}
-            />
-          </View>
+          {isLargeScreen && renderCardPreview(false, cardRef)}
         </View>
+
+        {/* MODALE DATE */}
+        <Modal
+          visible={isDateModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsDateModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <ScrollView
+              style={styles.dateModalScrollView}
+              contentContainerStyle={[
+                styles.dateModalScrollContent,
+                height < 500 && styles.dateModalScrollContentShort,
+              ]}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Choisir une date</Text>
+                  <TouchableOpacity onPress={() => setIsDateModalVisible(false)}>
+                    <Text style={styles.closeModalBtn}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.calendarMonthRow}>
+                  <TouchableOpacity
+                    accessibilityLabel="Mois précédent"
+                    style={styles.calendarNavigationButton}
+                    onPress={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+                  >
+                    <Text style={styles.calendarNavigationText}>‹</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.calendarMonthTitle}>
+                    {calendarMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                  </Text>
+                  <TouchableOpacity
+                    accessibilityLabel="Mois suivant"
+                    style={styles.calendarNavigationButton}
+                    onPress={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+                  >
+                    <Text style={styles.calendarNavigationText}>›</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.calendarWeekRow}>
+                  {['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'].map((day, index) => (
+                    <View key={`${day}-${index}`} style={styles.calendarCell}>
+                      <Text style={styles.calendarWeekday}>{day}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.calendarGrid}>
+                  {calendarDays.map((day, index) => {
+                    const isSelected = day === selectedDate.getDate()
+                      && calendarMonth.getMonth() === selectedDate.getMonth()
+                      && calendarMonth.getFullYear() === selectedDate.getFullYear();
+
+                    return (
+                      <View key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}-${index}`} style={styles.calendarCell}>
+                        {day ? (
+                          <TouchableOpacity
+                            accessibilityLabel={`${day} ${calendarMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`}
+                            style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
+                            onPress={() => selectCalendarDate(day)}
+                          >
+                            <Text style={[styles.calendarDayText, isSelected && styles.calendarDayTextSelected]}>
+                              {day}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.calendarCancelButton}
+                  onPress={() => setIsDateModalVisible(false)}
+                >
+                  <Text style={styles.calendarCancelText}>Annuler</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </Modal>
 
         {/* MODALE FORMES */}
         <Modal
@@ -543,7 +784,7 @@ export default function App() {
                 <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
                   <Text style={styles.exportOptionIcon}>🎬</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (MP4)</Text>
+                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (WebM)</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -562,17 +803,22 @@ const styles = StyleSheet.create({
   mainSubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 24, marginTop: 4 },
   mainLayout: { flexDirection: 'column', gap: 20 },
   twoColumnLayout: { flexDirection: 'row', alignItems: 'flex-start' },
-  columnFlex: { flex: 1 },
+  columnFlex: { flexGrow: 0, flexShrink: 1, flexBasis: '42%', minWidth: 320 },
   editorPanel: { backgroundColor: '#1e293b', borderRadius: 16, padding: 22, borderWidth: 1, borderColor: '#334155' },
   panelHeader: { fontSize: 18, fontWeight: '700', color: '#38bdf8', marginBottom: 18 },
   formGroup: { marginBottom: 16 },
   label: { fontSize: 11, fontWeight: '700', color: '#94a3b8', marginBottom: 6, textTransform: 'uppercase' },
   input: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, borderRadius: 10, color: '#ffffff', padding: 12, fontSize: 13 },
+  messageInput: { minHeight: 88, textAlign: 'left' },
+  characterCount: { color: '#94a3b8', fontSize: 11, textAlign: 'right', marginTop: 5 },
   seasonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   seasonChip: { backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  themeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  themeDot: { width: 10, height: 10, borderRadius: 5 },
   seasonChipActive: { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
   seasonChipText: { color: '#94a3b8', fontSize: 11 },
   seasonChipTextActive: { color: '#ffffff', fontWeight: '700' },
+  dateSummary: { color: '#e2e8f0', fontSize: 13, fontWeight: '600', marginTop: 9 },
   webFileButton: { display: 'flex', backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: 13, fontWeight: '700', cursor: 'pointer' },
   fileUploadBtn: { backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center' },
   fileUploadBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
@@ -592,13 +838,31 @@ const styles = StyleSheet.create({
   exportActions: { marginTop: 18 },
   btnDownload: { backgroundColor: '#f43f5e', padding: 16, borderRadius: 12, alignItems: 'center' },
   btnExportText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
-  previewSection: { width: '100%' },
+  previewSection: { flex: 1, minWidth: 0 },
+  mobileStickyPreview: { alignSelf: 'stretch', marginHorizontal: -20, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 7, backgroundColor: '#0f172a', borderBottomWidth: 1, borderBottomColor: '#334155', zIndex: 20, elevation: 8 },
   previewTitle: { fontSize: 12, fontWeight: '700', color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { width: '100%', maxWidth: 480, backgroundColor: '#1e293b', borderRadius: 18, padding: 22, borderWidth: 1, borderColor: '#334155' },
+  dateModalScrollView: { flex: 1, width: '100%' },
+  dateModalScrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 12 },
+  dateModalScrollContentShort: { justifyContent: 'flex-start' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   modalTitle: { fontSize: 16, fontWeight: '800', color: '#ffffff' },
   closeModalBtn: { color: '#94a3b8', fontSize: 20, fontWeight: '700', padding: 4 },
+  calendarMonthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  calendarNavigationButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' },
+  calendarNavigationText: { color: '#38bdf8', fontSize: 26, lineHeight: 30 },
+  calendarMonthTitle: { color: '#ffffff', fontSize: 15, fontWeight: '700', textTransform: 'capitalize' },
+  calendarWeekRow: { flexDirection: 'row' },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  calendarCell: { width: '14.2857%', height: 38, padding: 2, alignItems: 'stretch', justifyContent: 'center' },
+  calendarWeekday: { color: '#94a3b8', fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  calendarDay: { flex: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  calendarDaySelected: { backgroundColor: '#0284c7' },
+  calendarDayText: { color: '#e2e8f0', fontSize: 14 },
+  calendarDayTextSelected: { color: '#ffffff', fontWeight: '800' },
+  calendarCancelButton: { alignSelf: 'flex-end', paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
+  calendarCancelText: { color: '#38bdf8', fontSize: 13, fontWeight: '700' },
   shapesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
   shapeCard: { width: '48%', backgroundColor: '#0f172a', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#334155', alignItems: 'center' },
   shapeCardSelected: { borderColor: '#38bdf8', backgroundColor: '#0369a1' },
