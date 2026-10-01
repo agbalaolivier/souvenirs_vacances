@@ -124,8 +124,9 @@ export default function App() {
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
 
-  const [audioUri, setAudioUri] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
-  const [audioName, setAudioName] = useState('Musique d\'ambiance longue (Défaut)');
+  const [audioUri, setAudioUri] = useState(null);
+  const [audioName, setAudioName] = useState('');
+  const [hasCustomAudio, setHasCustomAudio] = useState(false);
   const [sound, setSound] = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [recording, setRecording] = useState(null);
@@ -208,6 +209,7 @@ export default function App() {
       const fileUri = URL.createObjectURL(file);
       setAudioUri(fileUri);
       setAudioName(file.name);
+      setHasCustomAudio(true);
 
       if (sound) {
         await sound.unloadAsync();
@@ -235,6 +237,7 @@ export default function App() {
         const uri = recording.getURI();
         setAudioUri(uri);
         setAudioName('Mon_message_vocal.wav');
+        setHasCustomAudio(true);
 
         const { sound: newSound } = await Audio.Sound.createAsync({ uri });
         setSound(newSound);
@@ -330,17 +333,22 @@ export default function App() {
     }
   };
 
-  const downloadImagePNG = async () => {
+  const downloadImageJPG = async () => {
     setIsExportModalVisible(false);
     try {
-      const uri = await captureRef(cardRef, { format: 'png', quality: 0.9 });
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(uri);
-      } else if (Platform.OS === 'web') {
+      const uri = await captureRef(cardRef, { format: 'jpg', quality: 0.95 });
+      if (Platform.OS === 'web') {
         const link = document.createElement('a');
-        link.download = 'carte-de-voeux.png';
+        link.download = 'carte-de-voeux.jpg';
         link.href = uri;
         link.click();
+      } else if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'image/jpeg',
+          dialogTitle: 'Partager ma carte souvenir',
+        });
+      } else {
+        Alert.alert('Partage indisponible', 'Le partage de fichiers n\'est pas disponible sur cet appareil.');
       }
     } catch (err) {
       Alert.alert('Erreur', "Échec de l'enregistrement de l'image.");
@@ -352,7 +360,7 @@ export default function App() {
     const durationMs = parseInt(audioDuration, 10) * 1000 || 15000;
 
     if (Platform.OS !== 'web') {
-      Alert.alert('Information', "L'exportation vidéo est optimisée pour le navigateur web.");
+      Alert.alert('Vidéo MP4 indisponible', "L'export MP4 nécessite un encodeur vidéo natif. Sans musique ajoutée, utilise l'export JPG.");
       return;
     }
 
@@ -475,7 +483,7 @@ export default function App() {
 
         {!isLargeScreen && (
           <View style={styles.mobileStickyPreview}>
-            {renderCardPreview(true)}
+            {renderCardPreview(true, cardRef)}
           </View>
         )}
 
@@ -774,19 +782,21 @@ export default function App() {
               </View>
 
               <View style={styles.exportOptionsList}>
-                <TouchableOpacity style={styles.exportOptionCard} onPress={downloadImagePNG}>
+                <TouchableOpacity style={styles.exportOptionCard} onPress={downloadImageJPG}>
                   <Text style={styles.exportOptionIcon}>📸</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.exportOptionTitle}>Télécharger en Image HD (PNG)</Text>
+                    <Text style={styles.exportOptionTitle}>Partager en image JPG</Text>
                   </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
-                  <Text style={styles.exportOptionIcon}>🎬</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.exportOptionTitle}>Générer la Carte Vidéo (WebM)</Text>
-                  </View>
-                </TouchableOpacity>
+                {Platform.OS === 'web' && hasCustomAudio && (
+                  <TouchableOpacity style={styles.exportOptionCard} onPress={exportAsMP4}>
+                    <Text style={styles.exportOptionIcon}>🎬</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.exportOptionTitle}>Générer la vidéo web avec audio</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>
