@@ -109,7 +109,7 @@ app.post('/convert', upload.fields([
   } catch (error) {
     await fs.promises.rm(workdir, { recursive: true, force: true });
     console.error('FFmpeg conversion failed:', error.message);
-    res.status(500).json({ error: 'La conversion MP4 a échoué.', details: error.message.slice(0, 500) });
+    res.status(500).json({ error: 'La conversion MP4 a échoué.', details: error.message.slice(-2000) });
   }
 });
 
