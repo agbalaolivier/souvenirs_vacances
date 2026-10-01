@@ -4,6 +4,8 @@ import { Video } from 'expo-av';
 import ShapedImage from './ShapedImage';
 import PhotoAdjuster from './PhotoAdjuster';
 import useimageSize from './useimageSize';
+import fairePartReference from '../assets/faire-part-reference.webp';
+import printempsReference from '../assets/printemps-frais-reference.jpg';
 
 // ============================================================
 // CONFIGURATION DES THÈMES
@@ -104,18 +106,19 @@ const themesConfig = {
     cornerAccents: false,
   },
   printemps: {
-    cardBg: '#f0fdf6',
-    textColor: '#065f46',
-    accentColor: '#10b981',
-    borderColor: '#a7f3d0',
-    badgeBg: 'rgba(255, 255, 255, 0.9)',
-    font: { web: "'Century Gothic', Futura, sans-serif", ios: 'Futura', android: 'sans-serif' },
-    letterSpacing: 1.5,
+    cardBg: '#eadfd7',
+    textColor: '#765346',
+    accentColor: '#b78369',
+    borderColor: '#d4b9a8',
+    badgeBg: 'rgba(252, 248, 242, 0.88)',
+    backgroundImage: printempsReference,
+    font: { web: "'Cormorant Garamond', Georgia, serif", ios: 'Georgia', android: 'serif' },
+    letterSpacing: 1,
     fontWeight: '400',
-    cornerRadius: 26,
-    outerBorderWidth: 1.5,
+    cornerRadius: 8,
+    outerBorderWidth: 1,
     innerGap: 12,
-    innerBorderStyle: 'dotted',
+    innerBorderStyle: 'solid',
     cornerAccents: false,
   },
   luxe: {
@@ -134,17 +137,18 @@ const themesConfig = {
     cornerAccents: true,
   },
   fairepart: {
-    cardBg: '#f7f4ef',
-    textColor: '#4a403b',
-    accentColor: '#c5a880',
-    borderColor: '#d4c5a9',
-    badgeBg: 'rgba(255, 255, 255, 0.9)',
-    font: { web: 'Georgia, serif', ios: 'Georgia', android: 'serif' },
-    letterSpacing: 2,
+    cardBg: '#8f1d1d',
+    textColor: '#f8e8bd',
+    accentColor: '#d9aa55',
+    borderColor: '#d9aa55',
+    badgeBg: 'rgba(60, 15, 16, 0.78)',
+    backgroundImage: fairePartReference,
+    font: { web: "'Cormorant Garamond', Georgia, serif", ios: 'Georgia', android: 'serif' },
+    letterSpacing: 1.5,
     fontWeight: '400',
-    cornerRadius: 18,
-    outerBorderWidth: 2,
-    innerGap: 12,
+    cornerRadius: 4,
+    outerBorderWidth: 1,
+    innerGap: 14,
     innerBorderStyle: 'solid',
     cornerAccents: false,
   },
@@ -208,6 +212,10 @@ export default function CardPreview({
         style={{
           width: '100%',
           backgroundColor: currentTheme.cardBg,
+          backgroundImage: currentTheme.backgroundImage ? `url(${currentTheme.backgroundImage})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'soft-light',
           borderRadius: `${currentTheme.cornerRadius}px`,
           overflow: 'hidden',
           boxShadow: '0 15px 35px rgba(0,0,0,0.15)',
