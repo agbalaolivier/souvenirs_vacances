@@ -11,6 +11,30 @@
 export const SHAPE_DEFS = {
   'shape-circle': { type: 'circle', cx: 50, cy: 50, r: 42 },
 
+  'shape-portrait': { type: 'rect', x: 18, y: 4, width: 64, height: 92, rx: 8 },
+
+  'shape-landscape': { type: 'rect', x: 4, y: 18, width: 92, height: 64, rx: 8 },
+
+  'shape-oval': {
+    type: 'path',
+    d: 'M50,14 C73.20,14 92,30.12 92,50 C92,69.88 73.20,86 50,86 C26.80,86 8,69.88 8,50 C8,30.12 26.80,14 50,14 Z',
+  },
+
+  'shape-arch': {
+    type: 'path',
+    d: 'M12,94 L12,46 C12,24.91 28.91,8 50,8 C71.09,8 88,24.91 88,46 L88,94 Z',
+  },
+
+  'shape-torn': {
+    type: 'path',
+    d: 'M13,8 L86,8 L91,19 L87,29 L93,40 L88,51 L93,62 L87,73 L92,83 L86,93 L14,93 L8,83 L13,72 L7,61 L12,50 L7,39 L13,28 L8,18 Z',
+  },
+
+  'shape-film': {
+    type: 'path',
+    d: 'M18,6 L82,6 Q94,6 94,18 L88,23 L94,28 L88,33 L94,38 L88,43 L94,48 L88,53 L94,58 L88,63 L94,68 L88,73 L94,78 L88,83 L94,88 Q94,94 82,94 L18,94 Q6,94 6,82 L12,77 L6,72 L12,67 L6,62 L12,57 L6,52 L12,47 L6,42 L12,37 L6,32 L12,27 L6,22 L12,17 Q6,6 18,6 Z',
+  },
+
   'shape-diamond': {
     type: 'path',
     d: 'M43.64,10.36 Q50.00,4.00 56.36,10.36 L89.64,43.64 Q96.00,50.00 89.64,56.36 L56.36,89.64 Q50.00,96.00 43.64,89.64 L10.36,56.36 Q4.00,50.00 10.36,43.64 Z',
@@ -58,7 +82,7 @@ export const SHAPE_DEFS = {
   },
 
   // Carré : géré à part (simple rectangle arrondi, pas de découpe complexe nécessaire)
-  'shape-square': { type: 'rect', x: 6, y: 6, width: 88, height: 88, rx: 24 },
+  'shape-square': { type: 'rect', x: 0, y: 0, width: 100, height: 100, rx: 10 },
 };
 
 export default SHAPE_DEFS;

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Defs, ClipPath, Rect, Circle, Path, Image as SvgImage } from 'react-native-svg';
-import { SHAPE_DEFS } from './shapePaths';
+import { SHAPE_DEFS } from './Shapepaths';
 
 // Ce fichier n'est chargé que sur iOS/Android (Metro utilise ShapedImage.web.js pour le web).
 //
@@ -33,33 +33,13 @@ function renderClipContent(def) {
 // size : taille d'affichage en pixels (par défaut 120).
 // instanceId : identifiant optionnel (ex. l'index dans une liste) pour garantir des
 // clipPath id uniques quand plusieurs ShapedImage de la même forme sont rendus ensemble.
-export default function ShapedImage({ uri, shape, size = 120, instanceId = '' }) {
-  const def = SHAPE_DEFS[shape];
-
-  if (shape === 'shape-square' || !def) {
-    const squareDef = SHAPE_DEFS['shape-square'];
-    const clipId = `shaped-image-clip-square-${instanceId}`;
-    return (
-      <View style={styles.container}>
-        <Svg width={size} height={size} viewBox="0 0 100 100">
-          <Defs>
-            <ClipPath id={clipId}>{renderClipContent(squareDef)}</ClipPath>
-          </Defs>
-          <SvgImage
-            href={uri}
-            xlinkHref={uri}
-            x="0"
-            y="0"
-            width="100"
-            height="100"
-            preserveAspectRatio="xMidYMid slice"
-            clipPath={`url(#${clipId})`}
-          />
-        </Svg>
-      </View>
-    );
-  }
-
+export default function ShapedImage({ uri, shape, size = 120, instanceId = '', photoObj }) {
+  const imageSize = useImageSize(uri);
+  const focus = resolveFocus(imageSize, photoObj);
+  const frame = imageSize
+    ? computeFraming(imageSize.w, imageSize.h, focus.x, focus.y, focus.zoom)
+    : { x: 0, y: 0, width: 100, height: 100 };
+  const def = SHAPE_DEFS[shape] || SHAPE_DEFS['shape-square'];
   const clipId = `shaped-image-clip-${shape}-${instanceId}`;
 
   return (
@@ -72,11 +52,11 @@ export default function ShapedImage({ uri, shape, size = 120, instanceId = '' })
         <SvgImage
           href={uri}
           xlinkHref={uri}
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          preserveAspectRatio="xMidYMid slice"
+            x={frame.x}
+            y={frame.y}
+            width={frame.width}
+            height={frame.height}
+            preserveAspectRatio={imageSize ? 'none' : 'xMidYMid slice'}
           clipPath={`url(#${clipId})`}
         />
       </Svg>

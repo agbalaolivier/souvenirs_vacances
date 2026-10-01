@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Platform, Image, TouchableOpacity, Modal, useWindowDimensions } from 'react-native';
 import { Video } from 'expo-av';
 import ShapedImage from './ShapedImage';
+import PhotoAdjuster from './PhotoAdjuster';
+import useimageSize from './useimageSize';
 
 // ============================================================
 // CONFIGURATION DES THÈMES
@@ -160,6 +162,7 @@ export default function CardPreview({
   theme = 'tropical',
   onRemovePhoto,
   onAiProcess,
+  compact = false,
 }) {
   const [lightboxIndex, setLightboxIndex] = useState(null);
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
@@ -188,8 +191,8 @@ export default function CardPreview({
   // ============================================================
   if (Platform.OS === 'web') {
     const isSingle = photos.length === 1;
-    const mediaSize = isSingle ? 220 : 120;
-    const gap = currentTheme.innerGap;
+    const mediaSize = compact ? (isSingle ? 88 : 52) : (isSingle ? 220 : 120);
+    const gap = compact ? 5 : currentTheme.innerGap;
 
     const cornerAccentStyleBase = {
       position: 'absolute',
@@ -237,35 +240,35 @@ export default function CardPreview({
           </>
         )}
 
-        <div style={{ position: 'relative', zIndex: 3, padding: '20px' }}>
+        <div style={{ position: 'relative', zIndex: 3, padding: compact ? '8px' : '20px' }}>
           {/* En-tête */}
-          <div style={{ textAlign: 'center', marginBottom: '20px', paddingTop: '10px' }}>
+          <div style={{ textAlign: 'center', marginBottom: compact ? '5px' : '20px', paddingTop: compact ? '0' : '10px' }}>
             {location ? (
-              <div style={{ display: 'inline-block', backgroundColor: currentTheme.badgeBg, padding: '4px 12px', borderRadius: '15px', marginBottom: '12px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: currentTheme.accentColor, letterSpacing: '1px', textTransform: 'uppercase' }}>
+              <div style={{ display: 'inline-block', maxWidth: '100%', boxSizing: 'border-box', backgroundColor: currentTheme.badgeBg, padding: compact ? '2px 8px' : '4px 12px', borderRadius: '15px', marginBottom: compact ? '3px' : '12px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: compact ? 'hidden' : 'visible', textOverflow: compact ? 'ellipsis' : 'clip', overflowWrap: 'anywhere' }}>
+                <span style={{ fontSize: compact ? '9px' : '11px', fontWeight: '600', color: currentTheme.accentColor, letterSpacing: compact ? '0' : '1px', textTransform: 'uppercase', overflowWrap: 'anywhere' }}>
                   📍 {location}
                 </span>
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: '27px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: '0 0 8px 0', letterSpacing: `${currentTheme.letterSpacing}px` }}>
+            <h2 style={{ fontSize: compact ? '16px' : '27px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {title || 'Événement'}
             </h2>
 
-            <p style={{ fontSize: '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: '0.5px' }}>
+            <p style={{ fontSize: compact ? '9px' : '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: compact ? '0' : '0.5px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {period ? `${period} • ` : ''}{subtitle || 'Moments partagés'}
             </p>
           </div>
 
           {/* Galerie Photos / Vidéos */}
-          <div style={{ padding: '10px 0', minHeight: '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ padding: compact ? '3px 0' : '10px 0', minHeight: compact ? '62px' : '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {photos.length === 0 ? (
-              <div style={{ width: '100%', height: '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: '13px', fontWeight: '500', fontStyle: 'italic' }}>
+              <div style={{ width: '100%', height: compact ? '56px' : '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: compact ? '10px' : '13px', fontWeight: '500', fontStyle: 'italic' }}>
                 ✨ Ajoutez vos photos ou vidéos souvenirs...
               </div>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '14px', maxWidth: '460px', width: '100%' }}>
-                {photos.map((item, index) => {
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
+                {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
                   const uri = typeof item === 'object' ? item.uri : item;
                   const type = typeof item === 'object' ? (item.type || '') : '';
                   const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
@@ -276,16 +279,16 @@ export default function CardPreview({
                       key={index}
                       style={{
                         position: 'relative',
-                        backgroundColor: '#ffffff',
-                        padding: '8px 8px 12px 8px',
-                        borderRadius: '8px',
-                        boxShadow: '0 6px 15px rgba(0,0,0,0.08)',
+                        backgroundColor: 'transparent',
+                        padding: 0,
+                        borderRadius: 0,
+                        boxShadow: compact ? 'none' : '0 6px 15px rgba(0,0,0,0.08)',
                         transform: isSingle ? 'none' : `rotate(${rotation})`,
                         display: 'inline-block',
                       }}
                     >
                       {/* Bouton suppression */}
-                      <button
+                      {!compact && <button
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onRemovePhoto) onRemovePhoto(index);
@@ -312,14 +315,14 @@ export default function CardPreview({
                         title="Supprimer ce média"
                       >
                         ✕
-                      </button>
+                      </button>}
 
                       {/* Aperçu cliquable */}
                       <div onClick={() => setLightboxIndex(index)} style={{ cursor: 'pointer' }}>
                         {isVideo ? (
                           <video
                             src={uri}
-                            style={{ width: mediaSize, height: mediaSize, objectFit: 'cover', borderRadius: '6px', display: 'block', pointerEvents: 'none' }}
+                            style={{ width: mediaSize, height: mediaSize, objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
                             muted
                             playsInline
                           />
@@ -330,14 +333,19 @@ export default function CardPreview({
                     </div>
                   );
                 })}
+                {compact && photos.length > 3 && (
+                  <div style={{ width: mediaSize, height: mediaSize, display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentTheme.textColor, fontSize: '12px', fontWeight: '700' }}>
+                    +{photos.length - 3}
+                  </div>
+                )}
               </div>
             )}
           </div>
 
           {/* Message personnel */}
-          <div style={{ padding: '20px 10px 10px 10px', textAlign: 'center' }}>
-            <div style={{ width: '40px', height: '1px', backgroundColor: currentTheme.accentColor, margin: '0 auto 12px auto' }} />
-            <p style={{ fontSize: '15px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, fontStyle: 'italic', color: currentTheme.textColor, margin: 0, letterSpacing: '0.5px' }}>
+          <div style={{ padding: compact ? '5px 4px 2px' : '20px 10px 10px 10px', textAlign: 'center' }}>
+            <div style={{ width: compact ? '24px' : '40px', height: '1px', backgroundColor: currentTheme.accentColor, margin: compact ? '0 auto 4px auto' : '0 auto 12px auto' }} />
+            <p style={{ fontSize: compact ? '10px' : '15px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, fontStyle: 'italic', color: currentTheme.textColor, margin: 0, letterSpacing: '0.5px', lineHeight: 1.35, maxWidth: '100%', maxHeight: compact ? '2.7em' : 'none', overflow: 'hidden', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
               {message || 'Avec tout notre amour.'}
             </p>
           </div>
@@ -495,10 +503,10 @@ export default function CardPreview({
   // RENDU MOBILE NATIF (iOS / Android)
   // ============================================================
   const isSingleNative = photos.length === 1;
-  const nativeMediaSize = isSingleNative ? 200 : 110;
+  const nativeMediaSize = compact ? (isSingleNative ? 88 : 52) : (isSingleNative ? 200 : 110);
   const lightboxMediaWidth = screenWidth * 0.88;
   const lightboxMediaHeight = screenHeight * 0.55;
-  const gap = currentTheme.innerGap;
+  const gap = compact ? 5 : currentTheme.innerGap;
 
   return (
     <View
@@ -539,17 +547,19 @@ export default function CardPreview({
         </React.Fragment>
       )}
 
-      <View style={{ padding: 20 }}>
+      <View style={{ padding: compact ? 8 : 20 }}>
         {/* En-tête */}
-        <View style={styles.header}>
+        <View style={[styles.header, compact && { paddingTop: 0, marginBottom: 5 }]}>
           {location ? (
-            <View style={[styles.badge, { backgroundColor: currentTheme.badgeBg }]}>
-              <Text style={[styles.badgeText, { color: currentTheme.accentColor }]}>📍 {location}</Text>
+            <View style={[styles.badge, compact && { paddingVertical: 2, marginBottom: 3 }, { backgroundColor: currentTheme.badgeBg }]}>
+              <Text numberOfLines={compact ? 1 : undefined} style={[styles.badgeText, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.accentColor }]}>📍 {location}</Text>
             </View>
           ) : null}
           <Text
+            numberOfLines={compact ? 1 : undefined}
             style={[
               styles.title,
+              compact && { fontSize: 16, marginBottom: 2, letterSpacing: 0 },
               {
                 color: currentTheme.textColor,
                 fontFamily: nativeFontFamily,
@@ -560,22 +570,22 @@ export default function CardPreview({
           >
             {title || 'Événement'}
           </Text>
-          <Text style={[styles.subtitle, { color: currentTheme.textColor }]}>
+          <Text numberOfLines={compact ? 1 : undefined} style={[styles.subtitle, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.textColor }]}>
             {period ? `${period} • ` : ''}{subtitle || 'Moments partagés'}
           </Text>
         </View>
 
         {/* Galerie Photos / Vidéos */}
-        <View style={styles.gallery}>
+        <View style={[styles.gallery, compact && { minHeight: 62 }]}>
           {photos.length === 0 ? (
-            <View style={[styles.emptyPlaceholder, { borderColor: currentTheme.accentColor }]}>
-              <Text style={[styles.emptyPlaceholderText, { color: currentTheme.textColor }]}>
+            <View style={[styles.emptyPlaceholder, compact && { height: 56 }, { borderColor: currentTheme.accentColor }]}>
+              <Text style={[styles.emptyPlaceholderText, compact && { fontSize: 10 }, { color: currentTheme.textColor }]}>
                 ✨ Ajoutez vos photos ou vidéos souvenirs...
               </Text>
             </View>
           ) : (
-            <View style={styles.galleryGrid}>
-              {photos.map((item, index) => {
+            <View style={[styles.galleryGrid, compact && { gap: 6 }]}>
+              {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
                 const uri = typeof item === 'object' ? item.uri : item;
                 const type = typeof item === 'object' ? (item.type || '') : '';
                 const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
@@ -586,12 +596,12 @@ export default function CardPreview({
                     key={index}
                     style={[styles.mediaFrame, !isSingleNative && { transform: [{ rotate: rotation }] }]}
                   >
-                    <TouchableOpacity
+                    {!compact && <TouchableOpacity
                       style={styles.deleteBadge}
                       onPress={() => onRemovePhoto && onRemovePhoto(index)}
                     >
                       <Text style={styles.deleteBadgeText}>✕</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity>}
 
                     <TouchableOpacity activeOpacity={0.85} onPress={() => setLightboxIndex(index)}>
                       {isVideo ? (
@@ -609,16 +619,23 @@ export default function CardPreview({
                   </View>
                 );
               })}
+              {compact && photos.length > 3 && (
+                <View style={[styles.morePhotos, { width: nativeMediaSize, height: nativeMediaSize }]}>
+                  <Text style={styles.morePhotosText}>+{photos.length - 3}</Text>
+                </View>
+              )}
             </View>
           )}
         </View>
 
         {/* Message personnel */}
-        <View style={styles.messageWrap}>
-          <View style={[styles.divider, { backgroundColor: currentTheme.accentColor }]} />
+        <View style={[styles.messageWrap, compact && { paddingTop: 5, paddingBottom: 2 }]}>
+          <View style={[styles.divider, compact && { width: 24, marginBottom: 4 }, { backgroundColor: currentTheme.accentColor }]} />
           <Text
+            numberOfLines={compact ? 2 : undefined}
             style={[
               styles.message,
+              compact && { fontSize: 10, lineHeight: 14 },
               { color: currentTheme.textColor, fontFamily: nativeFontFamily, fontWeight: currentTheme.fontWeight },
             ]}
           >
@@ -722,8 +739,8 @@ const styles = StyleSheet.create({
     zIndex: 4,
   },
   header: { alignItems: 'center', paddingTop: 10, marginBottom: 16 },
-  badge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 15, marginBottom: 14 },
-  badgeText: { fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
+  badge: { maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 15, marginBottom: 14 },
+  badgeText: { flexShrink: 1, textAlign: 'center', fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
   title: { fontSize: 25, textAlign: 'center', marginBottom: 8 },
   subtitle: { fontSize: 13, fontWeight: '500', fontStyle: 'italic', textAlign: 'center', opacity: 0.8, letterSpacing: 0.5 },
   gallery: { minHeight: 160, alignItems: 'center', justifyContent: 'center' },
@@ -741,10 +758,9 @@ const styles = StyleSheet.create({
   galleryGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 14, maxWidth: 460 },
   mediaFrame: {
     position: 'relative',
-    backgroundColor: '#ffffff',
-    padding: 8,
-    paddingBottom: 12,
-    borderRadius: 8,
+    backgroundColor: 'transparent',
+    padding: 0,
+    borderRadius: 0,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -769,9 +785,11 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   deleteBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: 'bold' },
-  messageWrap: { alignItems: 'center', paddingTop: 20, paddingBottom: 4 },
+  morePhotos: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15,23,42,0.08)', borderRadius: 8 },
+  morePhotosText: { color: '#334155', fontSize: 14, fontWeight: '700' },
+  messageWrap: { alignItems: 'center', width: '100%', paddingTop: 20, paddingBottom: 4 },
   divider: { width: 40, height: 1, marginBottom: 12 },
-  message: { fontSize: 15, fontStyle: 'italic', textAlign: 'center', letterSpacing: 0.5 },
+  message: { maxWidth: '100%', alignSelf: 'stretch', flexShrink: 1, fontSize: 15, fontStyle: 'italic', textAlign: 'left', letterSpacing: 0.5, lineHeight: 23 },
   lightboxOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.9)', alignItems: 'center', justifyContent: 'center' },
   lightboxClose: {
     position: 'absolute',

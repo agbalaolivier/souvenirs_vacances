@@ -1,17 +1,8 @@
 import React from 'react';
 import { SHAPE_DEFS } from './Shapepaths';
-
-// FIX : ce fichier porte le suffixe ".web.js" — Metro (le bundler d'Expo) le charge
-// automatiquement à la place de "ShapedImage.js" uniquement pour la cible web.
-// Il utilise du SVG natif (balises <svg>/<clipPath> du navigateur), donc aucun import
-// de "react-native-svg" ici — ce module reste indépendant de cette librairie mobile,
-// pour ne jamais faire planter le bundle web si elle n'est pas installée.
-//
-// FIX important : avant, certaines formes (cœur, trèfle, nuage) utilisaient
-// clip-path: path() en unités absolues, qui ne s'adapte PAS à la taille de l'image.
-// Résultat : avec une seule photo affichée en plus grand, ces formes étaient mal
-// cadrées/décentrées. Toutes les formes utilisent maintenant un <clipPath> SVG avec
-// viewBox "0 0 100 100", qui s'adapte automatiquement à la prop "size".
+import useimageSize from './useimageSize';
+import { resolveFocus, computeFraming } from './Imageframing';
+import PhotoAdjuster from './PhotoAdjuster';
 
 function renderClipContent(def, keyPrefix) {
   if (!def) return null;
@@ -33,9 +24,14 @@ function renderClipContent(def, keyPrefix) {
   return <path d={def.d} />;
 }
 
-export default function ShapedImage({ uri, shape, size = 120 }) {
+export default function ShapedImage({ uri, shape, size = 110, photoObj }) {
+  const imageSize = useimageSize(uri);
+  const focus = resolveFocus(imageSize, photoObj);
+  const frame = imageSize
+    ? computeFraming(imageSize.w, imageSize.h, focus.x, focus.y, focus.zoom)
+    : { x: 0, y: 0, width: 100, height: 100 };
   const def = SHAPE_DEFS[shape] || SHAPE_DEFS['shape-square'];
-  const clipId = `shaped-image-clip-web-${shape || 'square'}-${Math.round(size)}`;
+  const clipId = `shaped-image-clip-web-${shape}-${Math.round(size)}`;
 
   return (
     <div
@@ -48,18 +44,18 @@ export default function ShapedImage({ uri, shape, size = 120 }) {
         overflow: 'hidden',
       }}
     >
-      <svg width={size} height={size} viewBox="0 0 100 100">
+      <svg width={size} height={size} viewBox="0 0 100 100" style={{ display: 'block' }}>
         <defs>
           <clipPath id={clipId}>{renderClipContent(def, clipId)}</clipPath>
         </defs>
         <image
           href={uri}
           xlinkHref={uri}
-          x="0"
-          y="0"
-          width="100"
-          height="100"
-          preserveAspectRatio="xMidYMid slice"
+          x={frame.x}
+          y={frame.y}
+          width={frame.width}
+          height={frame.height}
+          preserveAspectRatio={imageSize ? 'none' : 'xMidYMid slice'}
           clipPath={`url(#${clipId})`}
         />
       </svg>

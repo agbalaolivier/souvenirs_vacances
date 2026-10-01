@@ -19,12 +19,39 @@ import { Audio } from 'expo-av';
 import { captureRef } from 'react-native-view-shot';
 
 import CardPreview from './components/CardPreview';
+import PhotoAdjuster from './components/PhotoAdjuster';
+
+function formatDateAndSeason(date) {
+  const dateLabel = new Intl.DateTimeFormat('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+  const month = date.getMonth();
+  const season = month < 2 || month === 11
+    ? 'hiver'
+    : month < 5
+      ? 'printemps'
+      : month < 8
+        ? 'été'
+        : month < 11
+          ? 'automne'
+          : 'hiver';
+
+  return `${dateLabel} (${season} ${date.getFullYear()})`;
+}
 
 const SHAPES_OPTIONS = [
   { id: 'shape-square', label: 'Carré Arrondi', icon: '🔲' },
+  { id: 'shape-portrait', label: 'Portrait', icon: '▯' },
+  { id: 'shape-landscape', label: 'Paysage', icon: '▭' },
   { id: 'shape-heart', label: 'Cœur', icon: '❤️' },
   { id: 'shape-circle', label: 'Cercle', icon: '⚪' },
+  { id: 'shape-oval', label: 'Ovale', icon: '🥚' },
   { id: 'shape-star', label: 'Étoile', icon: '⭐' },
+  { id: 'shape-arch', label: 'Arche', icon: '🏛️' },
+  { id: 'shape-torn', label: 'Photo déchirée', icon: '📄' },
+  { id: 'shape-film', label: 'Pellicule', icon: '🎞️' },
   { id: 'shape-diamond', label: 'Losange / Diamant', icon: '🔷' },
   { id: 'shape-hexagon', label: 'Hexagone', icon: '⬢' },
   { id: 'shape-bubble', label: 'Bulle', icon: '💬' },
@@ -47,10 +74,14 @@ const THEMES_OPTIONS = [
 
 export default function App() {
   const [title, setTitle] = useState('Meilleurs Vœux & Souvenirs !');
-  const [period, setPeriod] = useState("Aujourd'hui");
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [period, setPeriod] = useState(() => formatDateAndSeason(new Date()));
   const [selectedSeason, setSelectedSeason] = useState('today');
-  const [selectedYear, setSelectedYear] = useState('2026');
-  const [customDate, setCustomDate] = useState('');
+  const [selectedYear, setSelectedYear] = useState(() => String(new Date().getFullYear()));
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const today = new Date();
+    return new Date(today.getFullYear(), today.getMonth(), 1);
+  });
   const [subtitle, setSubtitle] = useState('Des moments inoubliables partagés avec vous');
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
@@ -90,6 +121,7 @@ export default function App() {
   const [shape, setShape] = useState('shape-square');
   const [theme, setTheme] = useState('tropical');
   const [isShapeModalVisible, setIsShapeModalVisible] = useState(false);
+  const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
 
   const [audioUri, setAudioUri] = useState('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3');
@@ -101,18 +133,38 @@ export default function App() {
   const [audioDuration, setAudioDuration] = useState('15');
 
   const cardRef = useRef();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const isLargeScreen = width >= 900;
 
-  const handlePeriodChange = (season, yearVal = selectedYear, dateVal = customDate) => {
+  const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+  const daysInCalendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
+  const calendarDays = [
+    ...Array(monthStart.getDay()).fill(null),
+    ...Array.from({ length: daysInCalendarMonth }, (_, index) => index + 1),
+  ];
+
+  const handlePeriodChange = (season, yearVal = selectedYear) => {
     setSelectedSeason(season);
     if (season === 'today') {
-      setPeriod("Aujourd'hui");
+      const today = new Date();
+      setSelectedDate(today);
+      setSelectedYear(String(today.getFullYear()));
+      setPeriod(formatDateAndSeason(today));
     } else if (season === 'customDate') {
-      setPeriod(dateVal || 'Date précise');
+      setCalendarMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1));
+      setIsDateModalVisible(true);
     } else {
       setPeriod(`${season} ${yearVal}`);
     }
+  };
+
+  const selectCalendarDate = (day) => {
+    const date = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+    setSelectedDate(date);
+    setSelectedYear(String(date.getFullYear()));
+    setSelectedSeason('customDate');
+    setPeriod(formatDateAndSeason(date));
+    setIsDateModalVisible(false);
   };
 
   const pickImagesMobile = async () => {
@@ -232,34 +284,49 @@ export default function App() {
   const fetchLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        const geocode = await Location.reverseGeocodeAsync({
+      if (status !== 'granted') {
+        setLocation('Localisation non autorisée');
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.BestForNavigation,
+      });
+      let addressParts = [];
+
+      if (Platform.OS !== 'web') {
+        try {
+          const geocode = await Location.reverseGeocodeAsync({
           latitude: loc.coords.latitude,
           longitude: loc.coords.longitude,
-        });
+          });
 
-        if (geocode && geocode.length > 0) {
-          const place = geocode[0];
-          const cityName = place.city || place.town || place.village || 'Ma position';
-          const countryName = place.country || '';
-          setLocation(`${cityName}, ${countryName}`);
-          return;
+          if (geocode.length > 0) {
+            const place = geocode[0];
+            const street = [place.streetNumber, place.street].filter(Boolean).join(' ') || place.name;
+            addressParts = [
+              street,
+              place.district,
+              place.city,
+              place.region,
+              place.postalCode,
+              place.country,
+            ].filter((part, index, parts) => part && parts.indexOf(part) === index);
+          }
+        } catch {
+          addressParts = [];
         }
       }
 
-      if (Platform.OS === 'web') {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
-        if (data.city && data.country_name) {
-          setLocation(`${data.city}, ${data.country_name}`);
-          return;
-        }
-      }
-
-      setLocation('Destination de Rêve');
+      const accuracy = loc.coords.accuracy;
+      const accuracyLabel = typeof accuracy === 'number'
+        ? `± ${Math.max(1, Math.round(accuracy))} m`
+        : 'précision indisponible';
+      const coordinates = `${loc.coords.latitude.toFixed(6)}, ${loc.coords.longitude.toFixed(6)}`;
+      const address = addressParts.length > 0 ? `${addressParts.join(', ')} · ` : '';
+      setLocation(`${address}${coordinates} (${accuracyLabel})`);
     } catch {
-      setLocation('Destination de Rêve');
+      setLocation('Position non disponible');
     }
   };
 
@@ -375,14 +442,42 @@ export default function App() {
   };
 
   const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
+  const renderCardPreview = (compact = false, previewRef = null) => (
+    <View style={styles.previewSection}>
+      <Text style={styles.previewTitle}>✨ Aperçu magique en direct</Text>
+      <CardPreview
+        cardRef={previewRef}
+        title={title}
+        period={period}
+        subtitle={subtitle}
+        location={location}
+        photos={photos}
+        shape={shape}
+        message={message}
+        theme={theme}
+        onRemovePhoto={removePhoto}
+        onAiProcess={handleAiProcess}
+        compact={compact}
+      />
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        stickyHeaderIndices={isLargeScreen ? undefined : [2]}
+      >
         <Text style={styles.mainTitle}> Studio de Création de Cartes Magiques</Text>
         <Text style={styles.mainSubtitle}>
           Personnalisez l'ambiance, les formes, les médias et la musique pour un rendu unique
         </Text>
+
+        {!isLargeScreen && (
+          <View style={styles.mobileStickyPreview}>
+            {renderCardPreview(true)}
+          </View>
+        )}
 
         <View style={[styles.mainLayout, isLargeScreen && styles.twoColumnLayout]}>
           {/* COLONNE GAUCHE : FORMULAIRE */}
@@ -427,6 +522,7 @@ export default function App() {
                   </TouchableOpacity>
                 ))}
               </View>
+              <Text style={styles.dateSummary}>{period}</Text>
             </View>
 
             <View style={styles.formGroup}>
@@ -509,13 +605,16 @@ export default function App() {
             </View>
 
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Message personnel (max 30 caractères)</Text>
+              <Text style={styles.label}>Message personnel (250 caractères maximum)</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.messageInput]}
                 value={message}
-                maxLength={30}
+                maxLength={250}
+                multiline
+                textAlignVertical="top"
                 onChangeText={setMessage}
               />
+              <Text style={styles.characterCount}>{message.length}/250</Text>
             </View>
 
             <View style={styles.exportActions}>
@@ -528,24 +627,95 @@ export default function App() {
             </View>
           </View>
 
-          {/* COLONNE DROITE : APERÇU */}
-          <View style={[styles.previewSection, isLargeScreen && styles.columnFlex]}>
-            <Text style={styles.previewTitle}>✨ Aperçu magique en direct</Text>
-            <CardPreview
-              cardRef={cardRef}
-              title={title}
-              period={period}
-              subtitle={subtitle}
-              location={location}
-              photos={photos}
-              shape={shape}
-              message={message}
-              theme={theme}
-              onRemovePhoto={removePhoto}
-              onAiProcess={handleAiProcess}
-            />
-          </View>
+          {isLargeScreen && renderCardPreview(false, cardRef)}
         </View>
+
+        {/* MODALE DATE */}
+        <Modal
+          visible={isDateModalVisible}
+          transparent={true}
+          animationType="fade"
+          onRequestClose={() => setIsDateModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <ScrollView
+              style={styles.dateModalScrollView}
+              contentContainerStyle={[
+                styles.dateModalScrollContent,
+                height < 500 && styles.dateModalScrollContentShort,
+              ]}
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Choisir une date</Text>
+                  <TouchableOpacity onPress={() => setIsDateModalVisible(false)}>
+                    <Text style={styles.closeModalBtn}>✕</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.calendarMonthRow}>
+                  <TouchableOpacity
+                    accessibilityLabel="Mois précédent"
+                    style={styles.calendarNavigationButton}
+                    onPress={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+                  >
+                    <Text style={styles.calendarNavigationText}>‹</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.calendarMonthTitle}>
+                    {calendarMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}
+                  </Text>
+                  <TouchableOpacity
+                    accessibilityLabel="Mois suivant"
+                    style={styles.calendarNavigationButton}
+                    onPress={() => setCalendarMonth((month) => new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+                  >
+                    <Text style={styles.calendarNavigationText}>›</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.calendarWeekRow}>
+                  {['Di', 'Lu', 'Ma', 'Me', 'Je', 'Ve', 'Sa'].map((day, index) => (
+                    <View key={`${day}-${index}`} style={styles.calendarCell}>
+                      <Text style={styles.calendarWeekday}>{day}</Text>
+                    </View>
+                  ))}
+                </View>
+
+                <View style={styles.calendarGrid}>
+                  {calendarDays.map((day, index) => {
+                    const isSelected = day === selectedDate.getDate()
+                      && calendarMonth.getMonth() === selectedDate.getMonth()
+                      && calendarMonth.getFullYear() === selectedDate.getFullYear();
+
+                    return (
+                      <View key={`${calendarMonth.getFullYear()}-${calendarMonth.getMonth()}-${index}`} style={styles.calendarCell}>
+                        {day ? (
+                          <TouchableOpacity
+                            accessibilityLabel={`${day} ${calendarMonth.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}`}
+                            style={[styles.calendarDay, isSelected && styles.calendarDaySelected]}
+                            onPress={() => selectCalendarDate(day)}
+                          >
+                            <Text style={[styles.calendarDayText, isSelected && styles.calendarDayTextSelected]}>
+                              {day}
+                            </Text>
+                          </TouchableOpacity>
+                        ) : null}
+                      </View>
+                    );
+                  })}
+                </View>
+
+                <TouchableOpacity
+                  style={styles.calendarCancelButton}
+                  onPress={() => setIsDateModalVisible(false)}
+                >
+                  <Text style={styles.calendarCancelText}>Annuler</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </Modal>
 
         {/* MODALE FORMES */}
         <Modal
@@ -633,12 +803,14 @@ const styles = StyleSheet.create({
   mainSubtitle: { fontSize: 13, color: '#94a3b8', textAlign: 'center', marginBottom: 24, marginTop: 4 },
   mainLayout: { flexDirection: 'column', gap: 20 },
   twoColumnLayout: { flexDirection: 'row', alignItems: 'flex-start' },
-  columnFlex: { flex: 1 },
+  columnFlex: { flexGrow: 0, flexShrink: 1, flexBasis: '42%', minWidth: 320 },
   editorPanel: { backgroundColor: '#1e293b', borderRadius: 16, padding: 22, borderWidth: 1, borderColor: '#334155' },
   panelHeader: { fontSize: 18, fontWeight: '700', color: '#38bdf8', marginBottom: 18 },
   formGroup: { marginBottom: 16 },
   label: { fontSize: 11, fontWeight: '700', color: '#94a3b8', marginBottom: 6, textTransform: 'uppercase' },
   input: { backgroundColor: '#0f172a', borderColor: '#334155', borderWidth: 1, borderRadius: 10, color: '#ffffff', padding: 12, fontSize: 13 },
+  messageInput: { minHeight: 88, textAlign: 'left' },
+  characterCount: { color: '#94a3b8', fontSize: 11, textAlign: 'right', marginTop: 5 },
   seasonRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   seasonChip: { backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
   themeChip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#0f172a', paddingHorizontal: 10, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
@@ -646,6 +818,7 @@ const styles = StyleSheet.create({
   seasonChipActive: { backgroundColor: '#0284c7', borderColor: '#38bdf8' },
   seasonChipText: { color: '#94a3b8', fontSize: 11 },
   seasonChipTextActive: { color: '#ffffff', fontWeight: '700' },
+  dateSummary: { color: '#e2e8f0', fontSize: 13, fontWeight: '600', marginTop: 9 },
   webFileButton: { display: 'flex', backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center', justifyContent: 'center', color: '#ffffff', fontSize: 13, fontWeight: '700', cursor: 'pointer' },
   fileUploadBtn: { backgroundColor: '#0d9488', borderRadius: 10, padding: 12, alignItems: 'center' },
   fileUploadBtnText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
@@ -665,13 +838,31 @@ const styles = StyleSheet.create({
   exportActions: { marginTop: 18 },
   btnDownload: { backgroundColor: '#f43f5e', padding: 16, borderRadius: 12, alignItems: 'center' },
   btnExportText: { color: '#ffffff', fontSize: 15, fontWeight: '800' },
-  previewSection: { width: '100%' },
+  previewSection: { flex: 1, minWidth: 0 },
+  mobileStickyPreview: { alignSelf: 'stretch', marginHorizontal: -20, paddingHorizontal: 20, paddingTop: 6, paddingBottom: 7, backgroundColor: '#0f172a', borderBottomWidth: 1, borderBottomColor: '#334155', zIndex: 20, elevation: 8 },
   previewTitle: { fontSize: 12, fontWeight: '700', color: '#94a3b8', marginBottom: 12, textTransform: 'uppercase' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.8)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   modalContent: { width: '100%', maxWidth: 480, backgroundColor: '#1e293b', borderRadius: 18, padding: 22, borderWidth: 1, borderColor: '#334155' },
+  dateModalScrollView: { flex: 1, width: '100%' },
+  dateModalScrollContent: { flexGrow: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 12 },
+  dateModalScrollContentShort: { justifyContent: 'flex-start' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
   modalTitle: { fontSize: 16, fontWeight: '800', color: '#ffffff' },
   closeModalBtn: { color: '#94a3b8', fontSize: 20, fontWeight: '700', padding: 4 },
+  calendarMonthRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  calendarNavigationButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#0f172a', alignItems: 'center', justifyContent: 'center' },
+  calendarNavigationText: { color: '#38bdf8', fontSize: 26, lineHeight: 30 },
+  calendarMonthTitle: { color: '#ffffff', fontSize: 15, fontWeight: '700', textTransform: 'capitalize' },
+  calendarWeekRow: { flexDirection: 'row' },
+  calendarGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+  calendarCell: { width: '14.2857%', height: 38, padding: 2, alignItems: 'stretch', justifyContent: 'center' },
+  calendarWeekday: { color: '#94a3b8', fontSize: 12, fontWeight: '700', textAlign: 'center' },
+  calendarDay: { flex: 1, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  calendarDaySelected: { backgroundColor: '#0284c7' },
+  calendarDayText: { color: '#e2e8f0', fontSize: 14 },
+  calendarDayTextSelected: { color: '#ffffff', fontWeight: '800' },
+  calendarCancelButton: { alignSelf: 'flex-end', paddingVertical: 10, paddingHorizontal: 12, marginTop: 8 },
+  calendarCancelText: { color: '#38bdf8', fontSize: 13, fontWeight: '700' },
   shapesGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, justifyContent: 'space-between' },
   shapeCard: { width: '48%', backgroundColor: '#0f172a', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#334155', alignItems: 'center' },
   shapeCardSelected: { borderColor: '#38bdf8', backgroundColor: '#0369a1' },
