@@ -54,6 +54,7 @@ const themesConfig = {
     font: { web: "'Brush Script MT', cursive", ios: 'Snell Roundhand', android: 'cursive' },
     letterSpacing: 0.5,
     fontWeight: '400',
+    titleSize: 27,
     cornerRadius: 28,
     outerBorderWidth: 2,
     innerGap: 14,
@@ -261,7 +262,7 @@ export default function CardPreview({
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: compact ? '16px' : '27px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <h2 style={{ fontSize: compact ? '16px' : `${currentTheme.titleSize || 23}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {title || 'Événement'}
             </h2>
 
@@ -574,6 +575,7 @@ export default function CardPreview({
                 color: currentTheme.textColor,
                 fontFamily: nativeFontFamily,
                 fontWeight: currentTheme.fontWeight,
+                fontSize: compact ? 16 : (currentTheme.titleSize || 23),
                 letterSpacing: currentTheme.letterSpacing,
               },
             ]}

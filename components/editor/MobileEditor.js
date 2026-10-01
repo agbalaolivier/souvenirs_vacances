@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Modal,
@@ -56,6 +56,29 @@ export default function MobileEditor({
   onExportMP4,
 }) {
   const [activeTool, setActiveTool] = useState(null);
+  const [notice, setNotice] = useState('');
+  const noticeTimer = useRef(null);
+
+  const notify = (message) => {
+    setNotice(message);
+    if (noticeTimer.current) clearTimeout(noticeTimer.current);
+    noticeTimer.current = setTimeout(() => setNotice(''), 2200);
+  };
+
+  const handleThemeChange = (value) => {
+    onThemeChange(value);
+    notify('Style mis à jour');
+  };
+
+  const handleShapeChange = (value) => {
+    onShapeChange(value);
+    notify('Forme des photos mise à jour');
+  };
+
+  const handleLocation = async () => {
+    await onLocation();
+    notify('Ville ajoutée à la carte');
+  };
 
   const closeSheet = () => setActiveTool(null);
   const selectTool = (toolId) => setActiveTool((current) => (current === toolId ? null : toolId));
@@ -127,7 +150,7 @@ export default function MobileEditor({
               <Text style={styles.optionTitle}>Ambiance</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.themeRow}>
                 {themes.map((item) => (
-                  <TouchableOpacity key={item.id} style={[styles.themeItem, theme === item.id && styles.themeItemActive]} onPress={() => onThemeChange(item.id)}>
+                  <TouchableOpacity key={item.id} style={[styles.themeItem, theme === item.id && styles.themeItemActive]} onPress={() => handleThemeChange(item.id)}>
                     <View style={[styles.themeSwatch, { backgroundColor: item.color }]} />
                     <Text style={[styles.themeLabel, theme === item.id && styles.themeLabelActive]}>{item.label}</Text>
                   </TouchableOpacity>
@@ -136,7 +159,7 @@ export default function MobileEditor({
               <Text style={styles.optionTitle}>Forme des photos</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.shapeRow}>
                 {shapes.map((item) => (
-                  <TouchableOpacity key={item.id} style={[styles.shapeItem, shape === item.id && styles.shapeItemActive]} onPress={() => onShapeChange(item.id)}>
+                  <TouchableOpacity key={item.id} style={[styles.shapeItem, shape === item.id && styles.shapeItemActive]} onPress={() => handleShapeChange(item.id)}>
                     <Text style={styles.shapeIcon}>{item.icon}</Text>
                     <Text style={[styles.themeLabel, shape === item.id && styles.themeLabelActive]}>{item.label}</Text>
                   </TouchableOpacity>
@@ -167,7 +190,7 @@ export default function MobileEditor({
           )}
           {activeTool === 'more' && (
             <View style={styles.sheetBody}>
-              <TouchableOpacity style={styles.secondaryAction} onPress={onLocation}>
+                <TouchableOpacity style={styles.secondaryAction} onPress={handleLocation}>
                 <Text style={styles.secondaryActionText}>⌖ Ajouter ma ville</Text>
               </TouchableOpacity>
               <Text style={styles.helperText}>La ville sera affichée sur la carte, sans coordonnées GPS.</Text>
@@ -215,6 +238,13 @@ export default function MobileEditor({
           <Text style={styles.loadingText}>Préparation de ta vidéo...</Text>
         </View>
       )}
+
+      {notice ? (
+        <View style={styles.notice} pointerEvents="none">
+          <Text style={styles.noticeIcon}>✓</Text>
+          <Text style={styles.noticeText}>{notice}</Text>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -267,6 +297,9 @@ const styles = StyleSheet.create({
   messageField: { minHeight: 70, textAlignVertical: 'top' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(35, 42, 40, 0.88)', alignItems: 'center', justifyContent: 'center', zIndex: 20 },
   loadingText: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginTop: 14 },
+  notice: { position: 'absolute', left: 24, right: 24, bottom: 104, minHeight: 44, borderRadius: 14, backgroundColor: '#244f46', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, zIndex: 30, shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 10, elevation: 8 },
+  noticeIcon: { color: '#bce8d8', fontSize: 18, fontWeight: '800', marginRight: 8 },
+  noticeText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(34, 37, 35, 0.42)', justifyContent: 'flex-end' },
   exportSheet: { backgroundColor: '#ffffff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, gap: 12 },
 });
