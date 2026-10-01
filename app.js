@@ -389,8 +389,10 @@ export default function App() {
       if (Platform.OS === 'web') {
         const imageBlob = await fetch(imageUri).then((response) => response.blob());
         const audioBlob = await fetch(audioUri).then((response) => response.blob());
-        formData.append('image', imageBlob, 'carte.jpg');
-        formData.append('audio', audioBlob, 'ambiance.mp3');
+        const imageExtension = imageBlob.type.includes('png') ? 'png' : 'jpg';
+        const audioExtension = audioBlob.type.includes('wav') ? 'wav' : audioBlob.type.includes('mp4') ? 'm4a' : 'mp3';
+        formData.append('image', imageBlob, `carte.${imageExtension}`);
+        formData.append('audio', audioBlob, `ambiance.${audioExtension}`);
       } else {
         formData.append('image', new File(imageUri));
         formData.append('audio', new File(audioUri));

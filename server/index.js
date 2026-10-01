@@ -14,6 +14,21 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+function extensionForMime(mimeType, fallback) {
+  const extensions = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+    'audio/mpeg': '.mp3',
+    'audio/mp3': '.mp3',
+    'audio/wav': '.wav',
+    'audio/x-wav': '.wav',
+    'audio/mp4': '.m4a',
+    'audio/x-m4a': '.m4a',
+  };
+  return extensions[mimeType] || fallback;
+}
+
 const allowedOrigins = new Set([
   process.env.FRONTEND_ORIGIN,
   'https://agbalaolivier.github.io',
@@ -49,8 +64,8 @@ app.post('/convert', upload.fields([
   }
 
   const workdir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'souvenirs-'));
-  const imagePath = path.join(workdir, 'card.jpg');
-  const audioPath = path.join(workdir, 'audio-input');
+  const imagePath = path.join(workdir, `card${extensionForMime(image.mimetype, '.jpg')}`);
+  const audioPath = path.join(workdir, `audio-input${extensionForMime(audio.mimetype, '.bin')}`);
   const outputPath = path.join(workdir, 'card.mp4');
 
   try {
@@ -93,7 +108,8 @@ app.post('/convert', upload.fields([
     });
   } catch (error) {
     await fs.promises.rm(workdir, { recursive: true, force: true });
-    res.status(500).json({ error: 'La conversion MP4 a échoué.' });
+    console.error('FFmpeg conversion failed:', error.message);
+    res.status(500).json({ error: 'La conversion MP4 a échoué.', details: error.message.slice(0, 500) });
   }
 });
 
