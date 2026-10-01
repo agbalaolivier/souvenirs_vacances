@@ -15,11 +15,14 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import * as Sharing from 'expo-sharing';
+import { File, Paths } from 'expo-file-system';
 import { Audio } from 'expo-av';
 import { captureRef } from 'react-native-view-shot';
 
 import CardPreview from './components/CardPreview';
 import PhotoAdjuster from './components/PhotoAdjuster';
+
+const VIDEO_API_URL = 'https://souvenirs-vacances.onrender.com';
 
 function formatDateAndSeason(date) {
   const dateLabel = new Intl.DateTimeFormat('fr-FR', {
@@ -357,93 +360,53 @@ export default function App() {
 
   const exportAsMP4 = async () => {
     setIsExportModalVisible(false);
-    const durationMs = parseInt(audioDuration, 10) * 1000 || 15000;
 
-    if (Platform.OS !== 'web') {
-      Alert.alert('Vidéo MP4 indisponible', "L'export MP4 nécessite un encodeur vidéo natif. Sans musique ajoutée, utilise l'export JPG.");
-      return;
-    }
-
-    // FIX: vérifie que le navigateur supporte réellement l'enregistrement vidéo
-    if (typeof MediaRecorder === 'undefined') {
-      Alert.alert('Erreur', "Votre navigateur ne supporte pas l'enregistrement vidéo.");
+    if (!hasCustomAudio || !audioUri) {
+      Alert.alert('Audio requis', 'Ajoute une musique ou enregistre un message avant de créer la vidéo.');
       return;
     }
 
     try {
-      const imageUri = await captureRef(cardRef, { format: 'png', quality: 1.0 });
+      const imageUri = await captureRef(cardRef, { format: 'jpg', quality: 0.95 });
+      const formData = new FormData();
 
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new window.Image();
-      img.src = imageUri;
+      if (Platform.OS === 'web') {
+        const imageBlob = await fetch(imageUri).then((response) => response.blob());
+        const audioBlob = await fetch(audioUri).then((response) => response.blob());
+        formData.append('image', imageBlob, 'carte.jpg');
+        formData.append('audio', audioBlob, 'ambiance.mp3');
+      } else {
+        formData.append('image', new File(imageUri));
+        formData.append('audio', new File(audioUri));
+      }
 
-      img.onload = async () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
+      const response = await fetch(`${VIDEO_API_URL}/convert`, {
+        method: 'POST',
+        body: formData,
+      });
 
-        const canvasStream = canvas.captureStream(30);
-        let combinedStream = canvasStream;
-        let audioElement = null;
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
 
-        if (audioUri) {
-          try {
-            audioElement = new window.Audio(audioUri);
-            audioElement.loop = true;
-            await audioElement.play();
-            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const source = audioCtx.createMediaElementSource(audioElement);
-            const dest = audioCtx.createMediaStreamDestination();
-            source.connect(dest);
-
-            combinedStream = new MediaStream([
-              ...canvasStream.getVideoTracks(),
-              ...dest.stream.getAudioTracks(),
-            ]);
-          } catch (audioErr) {
-            // FIX: si l'audio ne peut pas être capturé (ex: autoplay bloqué),
-            // on continue quand même l'export en vidéo silencieuse au lieu de tout planter.
-            console.warn("Impossible d'ajouter l'audio à la vidéo :", audioErr);
-            combinedStream = canvasStream;
-          }
-        }
-
-        // FIX: on vérifie le codec réellement supporté au lieu de le forcer en vp9
-        const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-          ? 'video/webm;codecs=vp9'
-          : 'video/webm';
-
-        const mediaRecorder = new MediaRecorder(combinedStream, { mimeType });
-        const chunks = [];
-
-        mediaRecorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) chunks.push(e.data);
-        };
-        mediaRecorder.onstop = () => {
-          // FIX: le fichier produit est réellement au format webm (pas mp4).
-          // On garde le type et l'extension cohérents pour que le fichier
-          // s'ouvre correctement, au lieu d'un .mp4 qui contient en fait du webm.
-          const blob = new Blob(chunks, { type: mimeType });
-          const videoUrl = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.download = 'carte-de-voeux-animee.webm';
-          link.href = videoUrl;
-          link.click();
-          URL.revokeObjectURL(videoUrl);
-          if (audioElement) audioElement.pause();
-        };
-
-        mediaRecorder.start();
-
-        const interval = setInterval(() => {
-          ctx.drawImage(img, 0, 0);
-        }, 1000 / 30);
-
-        setTimeout(() => {
-          clearInterval(interval);
-          mediaRecorder.stop();
-        }, durationMs);
-      };
+      if (Platform.OS === 'web') {
+        const videoBlob = await response.blob();
+        const videoUrl = URL.createObjectURL(videoBlob);
+        const link = document.createElement('a');
+        link.download = 'carte-souvenir.mp4';
+        link.href = videoUrl;
+        link.click();
+        URL.revokeObjectURL(videoUrl);
+      } else {
+        const videoFile = new File(Paths.cache, 'carte-souvenir.mp4');
+        if (videoFile.exists) videoFile.delete();
+        videoFile.create();
+        videoFile.write(new Uint8Array(await response.arrayBuffer()));
+        await Sharing.shareAsync(videoFile.uri, {
+          mimeType: 'video/mp4',
+          dialogTitle: 'Partager ma vidéo souvenir',
+        });
+      }
     } catch (e) {
       Alert.alert('Erreur Export Vidéo', "Impossible de générer le fichier vidéo.");
     }
