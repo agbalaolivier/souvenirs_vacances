@@ -23,6 +23,7 @@ import { captureRef } from 'react-native-view-shot';
 
 import CardPreview from './components/CardPreview';
 import PhotoAdjuster from './components/PhotoAdjuster';
+import MobileEditor from './components/editor/MobileEditor';
 
 const VIDEO_API_URL = 'https://souvenirs-vacances.onrender.com';
 
@@ -455,6 +456,38 @@ export default function App() {
       />
     </View>
   );
+
+  if (!isLargeScreen) {
+    return (
+      <MobileEditor
+        cardRef={cardRef}
+        title={title}
+        period={period}
+        subtitle={subtitle}
+        message={message}
+        location={location}
+        photos={photos}
+        shape={shape}
+        theme={theme}
+        themes={THEMES_OPTIONS}
+        audioName={audioName}
+        isRecording={isRecording}
+        isExporting={isExporting}
+        onTitleChange={setTitle}
+        onSubtitleChange={setSubtitle}
+        onMessageChange={setMessage}
+        onThemeChange={setTheme}
+        onPickImages={pickImagesMobile}
+        onWebMediaChange={handleWebFileChange}
+        onAudioFileChange={handleAudioFileChange}
+        onToggleRecording={toggleRecording}
+        onLocation={fetchLocation}
+        onRemovePhoto={removePhoto}
+        onAiProcess={handleAiProcess}
+        onOpenExport={() => setIsExportModalVisible(true)}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
