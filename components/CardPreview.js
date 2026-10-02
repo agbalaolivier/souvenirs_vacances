@@ -505,12 +505,14 @@ export default function CardPreview({
           </div>
 
           {/* Message personnel */}
-          <div style={{ padding: compact ? '5px 4px 2px' : '20px 10px 10px 10px', textAlign: 'center' }}>
-            <div style={{ width: compact ? '24px' : '40px', height: '1px', backgroundColor: currentTheme.accentColor, margin: compact ? '0 auto 4px auto' : '0 auto 12px auto' }} />
-            <p style={{ fontSize: compact ? '10px' : '15px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, fontStyle: 'italic', color: currentTheme.textColor, margin: 0, letterSpacing: '0.5px', lineHeight: 1.35, maxWidth: '100%', maxHeight: compact ? '2.7em' : 'none', overflow: 'hidden', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
-              {message || 'Avec tout notre amour.'}
-            </p>
-          </div>
+          {message ? (
+            <div style={{ padding: compact ? '5px 4px 2px' : '20px 10px 10px 10px', textAlign: 'center' }}>
+              <div style={{ width: compact ? '24px' : '40px', height: '1px', backgroundColor: currentTheme.accentColor, margin: compact ? '0 auto 4px auto' : '0 auto 12px auto' }} />
+              <p style={{ fontSize: compact ? '10px' : '15px', fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, fontStyle: 'italic', color: currentTheme.textColor, margin: 0, letterSpacing: '0.5px', lineHeight: 1.35, maxWidth: '100%', maxHeight: compact ? '2.7em' : 'none', overflow: 'hidden', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', textAlign: 'left' }}>
+                {message}
+              </p>
+            </div>
+          ) : null}
         </div>
 
         {/* MODALE LIGHTBOX WEB */}
