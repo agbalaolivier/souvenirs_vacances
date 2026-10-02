@@ -68,8 +68,9 @@ const themesConfig = {
     borderColor: '#a1a1aa',
     badgeBg: 'rgba(255, 255, 255, 0.9)',
     font: { web: "'Helvetica Neue', Arial, sans-serif", ios: 'Helvetica Neue', android: 'sans-serif' },
-    letterSpacing: 3,
+    letterSpacing: 1.5,
     fontWeight: '300',
+    titleSize: 18,
     cornerRadius: 4,
     outerBorderWidth: 1,
     innerGap: 7,
@@ -211,7 +212,8 @@ export default function CardPreview({
   const currentTheme = themesConfig[theme] || themesConfig.tropical;
   const nativeFontFamily = Platform.select({ ios: currentTheme.font.ios, android: currentTheme.font.android, default: currentTheme.font.android });
   const titleLength = (title || 'Événement').length;
-  const fittedTitleSize = Math.max(14, Math.min(currentTheme.titleSize || 21, Math.floor(480 / Math.max(titleLength, 1))));
+  const letterWidthFactor = 1 + Math.max(currentTheme.letterSpacing || 0, 0) * 0.09;
+  const fittedTitleSize = Math.max(14, Math.min(currentTheme.titleSize || 21, Math.floor(480 / (Math.max(titleLength, 1) * letterWidthFactor))));
 
   // Gestion de la navigation Lightbox (partagée web + mobile)
   const handlePrev = (e) => {
@@ -299,7 +301,7 @@ export default function CardPreview({
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: compact ? '16px' : `${fittedTitleSize}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'visible' }}>
+            <h2 style={{ fontSize: compact ? '16px' : `${fittedTitleSize}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: '100%', textAlign: 'center' }}>
               {title || 'Événement'}
             </h2>
 
@@ -655,6 +657,8 @@ export default function CardPreview({
                 fontWeight: currentTheme.fontWeight,
                 fontSize: compact ? 16 : fittedTitleSize,
                 letterSpacing: currentTheme.letterSpacing,
+                maxWidth: '100%',
+                alignSelf: 'stretch',
               },
             ]}
           >
