@@ -93,6 +93,78 @@ const themesConfig = {
     innerBorderStyle: 'solid',
     cornerAccents: false,
   },
+  festif: {
+    cardBg: '#fff8ef',
+    textColor: '#7c2d12',
+    accentColor: '#f97316',
+    borderColor: '#fdba74',
+    badgeBg: '#ffedd5',
+    font: { web: "'Trebuchet MS', Verdana, sans-serif", ios: 'Trebuchet MS', android: 'sans-serif' },
+    letterSpacing: 0.4,
+    fontWeight: '800',
+    titleSize: 20,
+    cornerRadius: 18,
+    outerBorderWidth: 2,
+    innerGap: 10,
+    innerBorderStyle: 'solid',
+    cornerAccents: true,
+    layout: 'triptych',
+    slotCount: 3,
+  },
+  anniversaire: {
+    cardBg: '#fff7fc',
+    textColor: '#831843',
+    accentColor: '#ec4899',
+    borderColor: '#f9a8d4',
+    badgeBg: '#fce7f3',
+    font: { web: "'Arial Rounded MT Bold', Arial, sans-serif", ios: 'Arial Rounded MT Bold', android: 'sans-serif' },
+    letterSpacing: 0.2,
+    fontWeight: '800',
+    titleSize: 20,
+    cornerRadius: 20,
+    outerBorderWidth: 2,
+    innerGap: 10,
+    innerBorderStyle: 'solid',
+    cornerAccents: true,
+    layout: 'triptych',
+    slotCount: 3,
+  },
+  deuil: {
+    cardBg: '#f8fafc',
+    textColor: '#1e293b',
+    accentColor: '#64748b',
+    borderColor: '#cbd5e1',
+    badgeBg: '#f1f5f9',
+    font: { web: "Georgia, 'Times New Roman', serif", ios: 'Georgia', android: 'serif' },
+    letterSpacing: 0.8,
+    fontWeight: '400',
+    titleSize: 19,
+    cornerRadius: 3,
+    outerBorderWidth: 1,
+    innerGap: 12,
+    innerBorderStyle: 'solid',
+    cornerAccents: false,
+    layout: 'memorial',
+    slotCount: 1,
+  },
+  naissance: {
+    cardBg: '#f5fbfd',
+    textColor: '#164e63',
+    accentColor: '#67b7d1',
+    borderColor: '#bae6fd',
+    badgeBg: '#e0f2fe',
+    font: { web: "'Arial Rounded MT Bold', Arial, sans-serif", ios: 'Arial Rounded MT Bold', android: 'sans-serif' },
+    letterSpacing: 0.3,
+    fontWeight: '700',
+    titleSize: 20,
+    cornerRadius: 24,
+    outerBorderWidth: 2,
+    innerGap: 10,
+    innerBorderStyle: 'solid',
+    cornerAccents: false,
+    layout: 'triptych',
+    slotCount: 3,
+  },
   cartepostale: {
     cardBg: '#fffdf8',
     textColor: '#18324a',
@@ -239,6 +311,8 @@ export default function CardPreview({
     const mediaSize = compact ? (isSingle ? 88 : 52) : (isSingle ? 220 : 120);
     const gap = compact ? 5 : currentTheme.innerGap;
     const isPostcard = currentTheme.layout === 'postcard' && !compact;
+    const compartmentCount = !compact ? (currentTheme.slotCount || 0) : 0;
+    const isCompartmented = compartmentCount > 1;
 
     const cornerAccentStyleBase = {
       position: 'absolute',
@@ -301,9 +375,11 @@ export default function CardPreview({
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: compact ? '16px' : `${fittedTitleSize}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: '100%', textAlign: 'center' }}>
-              {title || 'Événement'}
-            </h2>
+            {title ? (
+              <h2 style={{ fontSize: compact ? '16px' : `${fittedTitleSize}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: '100%', textAlign: 'center' }}>
+                {title}
+              </h2>
+            ) : null}
 
             {period && (
               <p style={{ fontSize: compact ? '9px' : '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: compact ? '0' : '0.5px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -315,13 +391,24 @@ export default function CardPreview({
           {/* Galerie Photos / Vidéos */}
           <div style={{ padding: compact ? '3px 0' : '10px 0', minHeight: compact ? '62px' : '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {photos.length === 0 ? (
-              <label style={{ width: '100%', height: compact ? '56px' : '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: compact ? '10px' : '13px', fontWeight: '700', cursor: 'pointer', textAlign: 'center' }}>
-                <span>📷 Ajouter une photo ou une vidéo</span>
-                <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
-              </label>
+              isCompartmented ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', width: '100%', maxWidth: '460px', aspectRatio: '1.8' }}>
+                  {Array.from({ length: compartmentCount }).map((_, index) => (
+                    <label key={index} style={{ border: `2px dashed ${currentTheme.accentColor}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${currentTheme.accentColor}12`, color: currentTheme.accentColor, fontSize: '11px', fontWeight: '800', cursor: 'pointer', textAlign: 'center' }}>
+                      <span>📷 {index + 1}</span>
+                      <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <label style={{ width: '100%', height: compact ? '56px' : '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: compact ? '10px' : '13px', fontWeight: '700', cursor: 'pointer', textAlign: 'center' }}>
+                  <span>📷 Ajouter une photo ou une vidéo</span>
+                  <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
+                </label>
+              )
             ) : (
-              <div style={isPostcard ? { display: 'grid', gridTemplateColumns: '1.35fr 1fr', gridTemplateRows: '1fr 1fr', gap: '6px', maxWidth: '460px', width: '100%', aspectRatio: '1.45' } : { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
-                {(isPostcard ? photos.slice(0, 3) : compact ? photos.slice(0, 3) : photos).map((item, index) => {
+              <div style={isPostcard ? { display: 'grid', gridTemplateColumns: '1.35fr 1fr', gridTemplateRows: '1fr 1fr', gap: '6px', maxWidth: '460px', width: '100%', aspectRatio: '1.45' } : isCompartmented ? { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', maxWidth: '460px', width: '100%', aspectRatio: '1.8' } : { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
+                {(isPostcard || isCompartmented ? photos.slice(0, compartmentCount || 3) : compact ? photos.slice(0, 3) : photos).map((item, index) => {
                   const uri = typeof item === 'object' ? item.uri : item;
                   const type = typeof item === 'object' ? (item.type || '') : '';
                   const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
@@ -336,12 +423,14 @@ export default function CardPreview({
                         padding: 0,
                         borderRadius: 0,
                         boxShadow: compact ? 'none' : '0 6px 15px rgba(0,0,0,0.08)',
-                        transform: isPostcard || isSingle ? 'none' : `rotate(${rotation})`,
-                        display: isPostcard ? 'block' : 'inline-block',
+                        transform: isPostcard || isCompartmented || isSingle ? 'none' : `rotate(${rotation})`,
+                        display: isPostcard || isCompartmented ? 'block' : 'inline-block',
                         width: isPostcard ? '100%' : undefined,
                         height: isPostcard ? '100%' : undefined,
                         gridColumn: isPostcard ? (index === 0 ? '1' : '2') : undefined,
                         gridRow: isPostcard ? (index === 0 ? '1 / 3' : index === 1 ? '1' : '2') : undefined,
+                        border: isCompartmented ? `2px solid ${currentTheme.borderColor}` : undefined,
+                        overflow: isCompartmented ? 'hidden' : undefined,
                       }}
                     >
                       {/* Bouton suppression */}
@@ -376,7 +465,7 @@ export default function CardPreview({
 
                       {/* Aperçu cliquable */}
                       <div onClick={() => setLightboxIndex(index)} style={{ cursor: 'pointer' }}>
-                        {isPostcard ? (isVideo ? (
+                        {isPostcard || isCompartmented ? (isVideo ? (
                           <video src={uri} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} muted playsInline />
                         ) : (
                           <img src={uri} alt={`Photo ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -394,6 +483,12 @@ export default function CardPreview({
                     </div>
                   );
                 })}
+                {isCompartmented && photos.length < compartmentCount && Array.from({ length: compartmentCount - photos.length }).map((_, index) => (
+                  <label key={`empty-${index}`} style={{ minHeight: '90px', border: `2px dashed ${currentTheme.accentColor}`, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentTheme.accentColor, fontSize: '11px', fontWeight: '800', cursor: 'pointer' }}>
+                    <span>📷 {photos.length + index + 1}</span>
+                    <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
+                  </label>
+                ))}
                 {compact && photos.length > 3 && (
                   <div style={{ width: mediaSize, height: mediaSize, display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentTheme.textColor, fontSize: '12px', fontWeight: '700' }}>
                     +{photos.length - 3}
@@ -571,6 +666,8 @@ export default function CardPreview({
   // ============================================================
   const isSingleNative = photos.length === 1;
   const isPostcard = currentTheme.layout === 'postcard' && !compact;
+  const isCompartmented = Boolean(currentTheme.slotCount > 1 && !compact);
+  const isMontageLayout = isPostcard || isCompartmented;
   const nativeMediaSize = compact ? (isSingleNative ? 88 : 52) : (isSingleNative ? 200 : 110);
   const lightboxMediaWidth = screenWidth * 0.88;
   const lightboxMediaHeight = screenHeight * 0.55;
@@ -644,7 +741,7 @@ export default function CardPreview({
               <Text numberOfLines={compact ? 1 : undefined} style={[styles.badgeText, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.accentColor }]}>📍 {location}</Text>
             </View>
           ) : null}
-          <Text
+          {title ? <Text
             numberOfLines={1}
             adjustsFontSizeToFit
             minimumFontScale={0.6}
@@ -662,8 +759,8 @@ export default function CardPreview({
               },
             ]}
           >
-            {title || 'Événement'}
-          </Text>
+            {title}
+          </Text> : null}
           {period && (
             <Text numberOfLines={compact ? 1 : undefined} style={[styles.subtitle, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.textColor }]}>
               {period}
@@ -679,7 +776,7 @@ export default function CardPreview({
                 📷 Ajouter une photo ou une vidéo
               </Text>
             </TouchableOpacity>
-          ) : isPostcard ? (
+          ) : isMontageLayout ? (
               <View style={styles.postcardNativeLayout}>
                 {photos[0] ? renderPostcardNativePhoto(photos[0], 0, styles.postcardNativeMain) : null}
                 <View style={styles.postcardNativeSide}>
@@ -748,7 +845,7 @@ export default function CardPreview({
               { color: currentTheme.textColor, fontFamily: nativeFontFamily, fontWeight: currentTheme.fontWeight },
             ]}
           >
-            {message || 'Avec tout notre amour.'}
+            {message}
           </Text>
         </View>
       </View>

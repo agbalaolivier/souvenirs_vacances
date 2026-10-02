@@ -32,6 +32,8 @@ export default function MobileEditor({
   shapes,
   theme,
   themes,
+  textPreset,
+  messagePreset,
   audioName,
   audioKind,
   isRecording,
@@ -45,6 +47,7 @@ export default function MobileEditor({
   onMessageChange,
   onThemeChange,
   onShapeChange,
+  onUseThemeCopy,
   onPickImages,
   onTakePhoto,
   onTakeSelfie,
@@ -211,8 +214,11 @@ export default function MobileEditor({
           )}
           {activeTool === 'text' && (
             <View style={styles.sheetBody}>
-              <TextInput value={title} onChangeText={onTitleChange} placeholder="Titre de la carte" placeholderTextColor="#8b8f9a" style={styles.field} />
-              <TextInput value={message} onChangeText={onMessageChange} placeholder="Message personnel" placeholderTextColor="#8b8f9a" multiline style={[styles.field, styles.messageField]} />
+              <TextInput value={title} onChangeText={onTitleChange} placeholder={textPreset || 'Titre de la carte (optionnel)'} placeholderTextColor="#8b8f9a" style={styles.field} />
+              <TextInput value={message} onChangeText={onMessageChange} placeholder={messagePreset || 'Message personnel (optionnel)'} placeholderTextColor="#8b8f9a" multiline style={[styles.field, styles.messageField]} />
+              <TouchableOpacity style={styles.secondaryAction} onPress={onUseThemeCopy}>
+                <Text style={styles.secondaryActionText}>Ajouter le texte de cette ambiance</Text>
+              </TouchableOpacity>
             </View>
           )}
           {activeTool === 'audio' && (

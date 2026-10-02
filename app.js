@@ -71,6 +71,10 @@ const THEMES_OPTIONS = [
   { id: 'romantique', label: 'Romantique', color: '#db2777' },
   { id: 'chic', label: 'Chic Minimaliste', color: '#52525b' },
   { id: 'libre', label: 'Libre', color: '#1d9bf0' },
+  { id: 'festif', label: 'Festif', color: '#f97316' },
+  { id: 'anniversaire', label: 'Anniversaire', color: '#ec4899' },
+  { id: 'deuil', label: 'Deuil', color: '#475569' },
+  { id: 'naissance', label: 'Naissance', color: '#67b7d1' },
   { id: 'cartepostale', label: 'Carte postale', color: '#e35d4f' },
   { id: 'anniversaire', label: 'Anniversaire & Fête', color: '#a21caf' },
   { id: 'automne', label: 'Automne Doré', color: '#b45309' },
@@ -79,8 +83,21 @@ const THEMES_OPTIONS = [
   { id: 'fairepart', label: 'Faire-Part Élégant', color: '#c5a880' },
 ];
 
+const THEME_COPY = {
+  tropical: { title: 'Escapade au soleil', message: 'Des souvenirs lumineux à partager' },
+  noel: { title: 'Joyeuses fêtes', message: 'Que cette saison soit douce et lumineuse' },
+  romantique: { title: 'Notre histoire', message: 'Un instant précieux à garder près du cœur' },
+  chic: { title: 'Un moment rare', message: 'Élégance, lumière et souvenirs' },
+  libre: { title: 'Mon souvenir', message: 'Un instant à raconter' },
+  anniversaire: { title: 'Joyeux anniversaire', message: 'Une nouvelle année pleine de beaux moments' },
+  automne: { title: 'Les couleurs de l’automne', message: 'Une saison à garder en mémoire' },
+  printemps: { title: 'Bonjour le printemps', message: 'Des fleurs, de la lumière et de beaux souvenirs' },
+  luxe: { title: 'Édition privée', message: 'Un souvenir précieux, hors du temps' },
+  fairepart: { title: 'Notre grand jour', message: 'Un moment précieux à partager' },
+};
+
 export default function App() {
-  const [title, setTitle] = useState('Meilleurs Vœux & Souvenirs !');
+  const [title, setTitle] = useState('');
   const [selectedDate, setSelectedDate] = useState(() => new Date());
   const [period, setPeriod] = useState(() => formatDateAndSeason(new Date()));
   const [selectedSeason, setSelectedSeason] = useState('today');
@@ -89,7 +106,7 @@ export default function App() {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-  const [message, setMessage] = useState('Plein de bonheur et de soleil !');
+  const [message, setMessage] = useState('');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
 
@@ -547,6 +564,13 @@ export default function App() {
     if (nextTheme === 'libre' || nextTheme === 'cartepostale') setShape('shape-original');
   };
 
+  const useThemeCopy = () => {
+    const copy = THEME_COPY[theme];
+    if (!copy) return;
+    setTitle(copy.title);
+    setMessage(copy.message);
+  };
+
   const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
   const renderCardPreview = (compact = false, previewRef = null) => (
     <View style={styles.previewSection}>
@@ -583,6 +607,8 @@ export default function App() {
         shapes={SHAPES_OPTIONS}
         theme={theme}
         themes={THEMES_OPTIONS}
+        textPreset={THEME_COPY[theme]?.title || ''}
+        messagePreset={THEME_COPY[theme]?.message || ''}
         audioName={audioName}
         audioKind={audioKind}
         isRecording={isRecording}
@@ -596,6 +622,7 @@ export default function App() {
         onMessageChange={setMessage}
         onThemeChange={handleThemeChange}
         onShapeChange={setShape}
+        onUseThemeCopy={useThemeCopy}
         onPickImages={pickImagesMobile}
         onTakePhoto={takePhotoMobile}
         onTakeSelfie={() => takePhotoMobile('front')}
