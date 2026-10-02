@@ -14,7 +14,7 @@ import {
 import CardPreview from '../CardPreview';
 
 const TOOLS = [
-  { id: 'photos', icon: '▧', label: 'Photos' },
+  { id: 'photos', icon: '📷', label: 'Photos' },
   { id: 'style', icon: '✦', label: 'Style' },
   { id: 'text', icon: 'T', label: 'Texte' },
   { id: 'audio', icon: '♫', label: 'Audio' },
