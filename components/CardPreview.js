@@ -184,6 +184,8 @@ export default function CardPreview({
   theme = 'tropical',
   onRemovePhoto,
   onAiProcess,
+  onAddMedia,
+  onWebMediaChange,
   hideControls = false,
   compact = false,
 }) {
@@ -290,9 +292,10 @@ export default function CardPreview({
           {/* Galerie Photos / Vidéos */}
           <div style={{ padding: compact ? '3px 0' : '10px 0', minHeight: compact ? '62px' : '160px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             {photos.length === 0 ? (
-              <div style={{ width: '100%', height: compact ? '56px' : '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: compact ? '10px' : '13px', fontWeight: '500', fontStyle: 'italic' }}>
-                ✨ Ajoutez vos photos ou vidéos souvenirs...
-              </div>
+              <label style={{ width: '100%', height: compact ? '56px' : '140px', border: `1.5px dashed ${currentTheme.accentColor}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.4)', color: currentTheme.textColor, fontSize: compact ? '10px' : '13px', fontWeight: '700', cursor: 'pointer', textAlign: 'center' }}>
+                <span>📷 Ajouter une photo ou une vidéo</span>
+                <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
+              </label>
             ) : (
               <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
                 {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
@@ -364,6 +367,12 @@ export default function CardPreview({
                   <div style={{ width: mediaSize, height: mediaSize, display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentTheme.textColor, fontSize: '12px', fontWeight: '700' }}>
                     +{photos.length - 3}
                   </div>
+                )}
+                {!compact && !hideControls && (
+                  <label style={{ minWidth: '120px', height: '40px', border: `1px solid ${currentTheme.accentColor}`, borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: currentTheme.accentColor, fontSize: '11px', fontWeight: '700', cursor: 'pointer', padding: '0 10px' }}>
+                    <span>📷 Ajouter</span>
+                    <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
+                  </label>
                 )}
               </div>
             )}
@@ -606,11 +615,11 @@ export default function CardPreview({
         {/* Galerie Photos / Vidéos */}
         <View style={[styles.gallery, compact && { minHeight: 62 }]}>
           {photos.length === 0 ? (
-            <View style={[styles.emptyPlaceholder, compact && { height: 56 }, { borderColor: currentTheme.accentColor }]}>
+            <TouchableOpacity style={[styles.emptyPlaceholder, compact && { height: 56 }, { borderColor: currentTheme.accentColor }]} onPress={onAddMedia} activeOpacity={0.8}>
               <Text style={[styles.emptyPlaceholderText, compact && { fontSize: 10 }, { color: currentTheme.textColor }]}>
-                ✨ Ajoutez vos photos ou vidéos souvenirs...
+                📷 Ajouter une photo ou une vidéo
               </Text>
-            </View>
+            </TouchableOpacity>
           ) : (
             <View style={[styles.galleryGrid, compact && { gap: 6 }]}>
               {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
@@ -651,6 +660,11 @@ export default function CardPreview({
                 <View style={[styles.morePhotos, { width: nativeMediaSize, height: nativeMediaSize }]}>
                   <Text style={styles.morePhotosText}>+{photos.length - 3}</Text>
                 </View>
+              )}
+              {!compact && !hideControls && (
+                <TouchableOpacity style={styles.addMediaButton} onPress={onAddMedia} activeOpacity={0.8}>
+                  <Text style={styles.addMediaButtonText}>📷 Ajouter</Text>
+                </TouchableOpacity>
               )}
             </View>
           )}
@@ -815,6 +829,8 @@ const styles = StyleSheet.create({
   deleteBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: 'bold' },
   morePhotos: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15,23,42,0.08)', borderRadius: 8 },
   morePhotosText: { color: '#334155', fontSize: 14, fontWeight: '700' },
+  addMediaButton: { minWidth: 120, height: 40, paddingHorizontal: 10, borderWidth: 1, borderColor: '#356b60', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  addMediaButtonText: { color: '#356b60', fontSize: 11, fontWeight: '700' },
   messageWrap: { alignItems: 'center', width: '100%', paddingTop: 20, paddingBottom: 4 },
   divider: { width: 40, height: 1, marginBottom: 12 },
   message: { maxWidth: '100%', alignSelf: 'stretch', flexShrink: 1, fontSize: 15, fontStyle: 'italic', textAlign: 'left', letterSpacing: 0.5, lineHeight: 23 },

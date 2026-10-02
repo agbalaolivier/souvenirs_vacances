@@ -49,6 +49,7 @@ export default function MobileEditor({
   onShapeChange,
   onPickImages,
   onTakePhoto,
+  onTakeSelfie,
   onWebMediaChange,
   onAudioFileChange,
   onToggleRecording,
@@ -131,6 +132,8 @@ export default function MobileEditor({
             theme={theme}
             onRemovePhoto={onRemovePhoto}
             onAiProcess={onAiProcess}
+            onAddMedia={onPickImages}
+            onWebMediaChange={onWebMediaChange}
             hideControls={isExporting}
           />
         </View>
@@ -162,6 +165,16 @@ export default function MobileEditor({
               ) : (
                 <TouchableOpacity style={styles.primaryAction} onPress={onTakePhoto}>
                   <Text style={styles.primaryActionText}>📷 Prendre une photo</Text>
+                </TouchableOpacity>
+              )}
+              {Platform.OS === 'web' ? (
+                <label style={styles.secondaryAction}>
+                  <span>🤳 Prendre un selfie</span>
+                  <input type="file" accept="image/*" capture="user" onChange={onWebMediaChange} style={{ display: 'none' }} />
+                </label>
+              ) : (
+                <TouchableOpacity style={styles.secondaryAction} onPress={onTakeSelfie}>
+                  <Text style={styles.secondaryActionText}>🤳 Prendre un selfie</Text>
                 </TouchableOpacity>
               )}
               {Platform.OS === 'web' ? (

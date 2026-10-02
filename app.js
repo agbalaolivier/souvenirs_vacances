@@ -205,7 +205,7 @@ export default function App() {
     }
   };
 
-  const takePhotoMobile = async () => {
+  const takePhotoMobile = async (cameraType = 'back') => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
       Alert.alert('Permission refusée', 'Autorise la caméra pour prendre une photo.');
@@ -218,7 +218,7 @@ export default function App() {
         : ['images'],
       allowsEditing: false,
       quality: 0.9,
-      cameraType: 'back',
+      cameraType,
     });
 
     if (!result.canceled) {
@@ -524,6 +524,8 @@ export default function App() {
         theme={theme}
         onRemovePhoto={removePhoto}
         onAiProcess={handleAiProcess}
+        onAddMedia={pickImagesMobile}
+        onWebMediaChange={handleWebFileChange}
         hideControls={isExporting}
         compact={compact}
       />
@@ -560,6 +562,7 @@ export default function App() {
         onShapeChange={setShape}
         onPickImages={pickImagesMobile}
         onTakePhoto={takePhotoMobile}
+        onTakeSelfie={() => takePhotoMobile('front')}
         onWebMediaChange={handleWebFileChange}
         onAudioFileChange={handleAudioFileChange}
         onToggleRecording={toggleRecording}
