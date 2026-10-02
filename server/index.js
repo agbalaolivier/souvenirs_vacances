@@ -82,10 +82,13 @@ app.post('/convert', upload.fields([
       '-map', '0:v:0',
       '-map', '1:a:0',
       '-c:v', 'libx264',
+      '-preset', 'veryfast',
       '-tune', 'stillimage',
       '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
       '-pix_fmt', 'yuv420p',
-      '-r', '30',
+      // La carte est fixe : une image par seconde suffit et évite des milliers
+      // d'images identiques pour les pistes audio longues.
+      '-r', '1',
       '-c:a', 'aac',
       '-b:a', '128k',
       '-shortest',
