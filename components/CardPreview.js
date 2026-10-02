@@ -92,6 +92,23 @@ const themesConfig = {
     innerBorderStyle: 'solid',
     cornerAccents: false,
   },
+  cartepostale: {
+    cardBg: '#fffdf8',
+    textColor: '#18324a',
+    accentColor: '#e35d4f',
+    borderColor: '#e3d8cb',
+    badgeBg: '#fff2ed',
+    font: { web: "Georgia, 'Times New Roman', serif", ios: 'Georgia', android: 'serif' },
+    letterSpacing: 0.4,
+    fontWeight: '600',
+    titleSize: 20,
+    cornerRadius: 8,
+    outerBorderWidth: 1,
+    innerGap: 8,
+    innerBorderStyle: 'solid',
+    cornerAccents: false,
+    layout: 'postcard',
+  },
   anniversaire: {
     cardBg: '#fdf4ff',
     textColor: '#581c87',
@@ -220,6 +237,7 @@ export default function CardPreview({
     const isSingle = photos.length === 1;
     const mediaSize = compact ? (isSingle ? 88 : 52) : (isSingle ? 220 : 120);
     const gap = compact ? 5 : currentTheme.innerGap;
+    const isPostcard = currentTheme.layout === 'postcard' && !compact;
 
     const cornerAccentStyleBase = {
       position: 'absolute',
@@ -301,8 +319,8 @@ export default function CardPreview({
                 <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
               </label>
             ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
-                {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
+              <div style={isPostcard ? { display: 'grid', gridTemplateColumns: '1.35fr 1fr', gridTemplateRows: '1fr 1fr', gap: '6px', maxWidth: '460px', width: '100%', aspectRatio: '1.45' } : { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: compact ? '6px' : '14px', maxWidth: '460px', width: '100%' }}>
+                {(isPostcard ? photos.slice(0, 3) : compact ? photos.slice(0, 3) : photos).map((item, index) => {
                   const uri = typeof item === 'object' ? item.uri : item;
                   const type = typeof item === 'object' ? (item.type || '') : '';
                   const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
@@ -317,8 +335,12 @@ export default function CardPreview({
                         padding: 0,
                         borderRadius: 0,
                         boxShadow: compact ? 'none' : '0 6px 15px rgba(0,0,0,0.08)',
-                        transform: isSingle ? 'none' : `rotate(${rotation})`,
-                        display: 'inline-block',
+                        transform: isPostcard || isSingle ? 'none' : `rotate(${rotation})`,
+                        display: isPostcard ? 'block' : 'inline-block',
+                        width: isPostcard ? '100%' : undefined,
+                        height: isPostcard ? '100%' : undefined,
+                        gridColumn: isPostcard ? (index === 0 ? '1' : '2') : undefined,
+                        gridRow: isPostcard ? (index === 0 ? '1 / 3' : index === 1 ? '1' : '2') : undefined,
                       }}
                     >
                       {/* Bouton suppression */}
@@ -353,7 +375,11 @@ export default function CardPreview({
 
                       {/* Aperçu cliquable */}
                       <div onClick={() => setLightboxIndex(index)} style={{ cursor: 'pointer' }}>
-                        {isVideo ? (
+                        {isPostcard ? (isVideo ? (
+                          <video src={uri} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} muted playsInline />
+                        ) : (
+                          <img src={uri} alt={`Photo ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        )) : isVideo ? (
                           <video
                             src={uri}
                             style={{ width: mediaSize, height: mediaSize, objectFit: 'cover', display: 'block', pointerEvents: 'none' }}
@@ -543,10 +569,32 @@ export default function CardPreview({
   // RENDU MOBILE NATIF (iOS / Android)
   // ============================================================
   const isSingleNative = photos.length === 1;
+  const isPostcard = currentTheme.layout === 'postcard' && !compact;
   const nativeMediaSize = compact ? (isSingleNative ? 88 : 52) : (isSingleNative ? 200 : 110);
   const lightboxMediaWidth = screenWidth * 0.88;
   const lightboxMediaHeight = screenHeight * 0.55;
   const gap = compact ? 5 : currentTheme.innerGap;
+
+  const renderPostcardNativePhoto = (item, index, sizeStyle) => {
+    const uri = typeof item === 'object' ? item.uri : item;
+    const type = typeof item === 'object' ? (item.type || '') : '';
+    const isVideo = type.includes('video') || uri.endsWith('.mp4') || uri.endsWith('.webm') || uri.endsWith('.mov');
+
+    return (
+      <View key={index} style={[styles.postcardNativePhoto, sizeStyle]}>
+        {!hideControls && <TouchableOpacity style={styles.deleteBadge} onPress={() => onRemovePhoto && onRemovePhoto(index)}>
+          <Text style={styles.deleteBadgeText}>✕</Text>
+        </TouchableOpacity>}
+        <TouchableOpacity activeOpacity={0.85} onPress={() => setLightboxIndex(index)}>
+          {isVideo ? (
+            <Video source={{ uri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" isMuted useNativeControls={false} />
+          ) : (
+            <Image source={{ uri }} style={StyleSheet.absoluteFillObject} resizeMode="cover" />
+          )}
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   return (
     <View
@@ -628,7 +676,15 @@ export default function CardPreview({
                 📷 Ajouter une photo ou une vidéo
               </Text>
             </TouchableOpacity>
-          ) : (
+          ) : isPostcard ? (
+              <View style={styles.postcardNativeLayout}>
+                {photos[0] ? renderPostcardNativePhoto(photos[0], 0, styles.postcardNativeMain) : null}
+                <View style={styles.postcardNativeSide}>
+                  {photos[1] ? renderPostcardNativePhoto(photos[1], 1, styles.postcardNativeSmall) : null}
+                  {photos[2] ? renderPostcardNativePhoto(photos[2], 2, styles.postcardNativeSmall) : null}
+                </View>
+              </View>
+            ) : (
             <View style={[styles.galleryGrid, compact && { gap: 6 }]}>
               {(compact ? photos.slice(0, 3) : photos).map((item, index) => {
                 const uri = typeof item === 'object' ? item.uri : item;
@@ -675,7 +731,7 @@ export default function CardPreview({
                 </TouchableOpacity>
               )}
             </View>
-          )}
+            )}
         </View>
 
         {/* Message personnel */}
@@ -837,6 +893,10 @@ const styles = StyleSheet.create({
   deleteBadgeText: { color: '#ffffff', fontSize: 11, fontWeight: 'bold' },
   morePhotos: { alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(15,23,42,0.08)', borderRadius: 8 },
   morePhotosText: { color: '#334155', fontSize: 14, fontWeight: '700' },
+  postcardNativeLayout: { width: '100%', flexDirection: 'row', gap: 6, alignItems: 'stretch' },
+  postcardNativeMain: { flex: 1.35, aspectRatio: 0.86 },
+  postcardNativeSide: { flex: 1, gap: 6 },
+  postcardNativeSmall: { flex: 1, minHeight: 70 },
   addMediaButton: { minWidth: 120, height: 40, paddingHorizontal: 10, borderWidth: 1, borderColor: '#356b60', borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   addMediaButtonText: { color: '#356b60', fontSize: 11, fontWeight: '700' },
   messageWrap: { alignItems: 'center', width: '100%', paddingTop: 20, paddingBottom: 4 },

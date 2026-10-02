@@ -50,8 +50,6 @@ function formatDateAndSeason(date) {
 const SHAPES_OPTIONS = [
   { id: 'shape-square', label: 'Carré Arrondi', icon: '🔲' },
   { id: 'shape-original', label: 'Original', icon: '📷' },
-  { id: 'shape-portrait', label: 'Portrait', icon: '▯' },
-  { id: 'shape-landscape', label: 'Paysage', icon: '▭' },
   { id: 'shape-heart', label: 'Cœur', icon: '❤️' },
   { id: 'shape-circle', label: 'Cercle', icon: '⚪' },
   { id: 'shape-oval', label: 'Ovale', icon: '🥚' },
@@ -73,6 +71,7 @@ const THEMES_OPTIONS = [
   { id: 'romantique', label: 'Romantique', color: '#db2777' },
   { id: 'chic', label: 'Chic Minimaliste', color: '#52525b' },
   { id: 'libre', label: 'Libre', color: '#1d9bf0' },
+  { id: 'cartepostale', label: 'Carte postale', color: '#e35d4f' },
   { id: 'anniversaire', label: 'Anniversaire & Fête', color: '#a21caf' },
   { id: 'automne', label: 'Automne Doré', color: '#b45309' },
   { id: 'printemps', label: 'Printemps Frais', color: '#10b981' },
@@ -546,7 +545,7 @@ export default function App() {
 
   const handleThemeChange = (nextTheme) => {
     setTheme(nextTheme);
-    if (nextTheme === 'libre') setShape('shape-original');
+    if (nextTheme === 'libre' || nextTheme === 'cartepostale') setShape('shape-original');
   };
 
   const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
