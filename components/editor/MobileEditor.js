@@ -25,7 +25,6 @@ export default function MobileEditor({
   cardRef,
   title,
   period,
-  subtitle,
   message,
   location,
   photos,
@@ -43,7 +42,6 @@ export default function MobileEditor({
   isExportModalVisible,
   hasCustomAudio,
   onTitleChange,
-  onSubtitleChange,
   onMessageChange,
   onThemeChange,
   onShapeChange,
@@ -120,11 +118,10 @@ export default function MobileEditor({
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.canvasFrame}>
-          <CardPreview
+            <CardPreview
             cardRef={cardRef}
             title={title}
             period={period}
-            subtitle={subtitle}
             location={location}
             photos={photos}
             shape={shape}
@@ -215,7 +212,6 @@ export default function MobileEditor({
           {activeTool === 'text' && (
             <View style={styles.sheetBody}>
               <TextInput value={title} onChangeText={onTitleChange} placeholder="Titre de la carte" placeholderTextColor="#8b8f9a" style={styles.field} />
-              <TextInput value={subtitle} onChangeText={onSubtitleChange} placeholder="Sous-titre" placeholderTextColor="#8b8f9a" style={styles.field} />
               <TextInput value={message} onChangeText={onMessageChange} placeholder="Message personnel" placeholderTextColor="#8b8f9a" multiline style={[styles.field, styles.messageField]} />
             </View>
           )}

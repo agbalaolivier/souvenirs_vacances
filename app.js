@@ -89,7 +89,6 @@ export default function App() {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-  const [subtitle, setSubtitle] = useState('');
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
@@ -556,7 +555,6 @@ export default function App() {
         cardRef={previewRef}
         title={title}
         period={period}
-        subtitle={subtitle}
         location={location}
         photos={photos}
         shape={shape}
@@ -578,7 +576,6 @@ export default function App() {
         cardRef={cardRef}
         title={title}
         period={period}
-        subtitle={subtitle}
         message={message}
         location={location}
         photos={photos}
@@ -596,7 +593,6 @@ export default function App() {
         isExportModalVisible={isExportModalVisible}
         hasCustomAudio={hasCustomAudio}
         onTitleChange={setTitle}
-        onSubtitleChange={setSubtitle}
         onMessageChange={setMessage}
         onThemeChange={handleThemeChange}
         onShapeChange={setShape}
@@ -679,11 +675,6 @@ export default function App() {
                 ))}
               </View>
               <Text style={styles.dateSummary}>{period}</Text>
-            </View>
-
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Message de sous-titre</Text>
-              <TextInput style={styles.input} value={subtitle} onChangeText={setSubtitle} />
             </View>
 
             <View style={styles.formGroup}>

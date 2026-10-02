@@ -193,7 +193,6 @@ export default function CardPreview({
   cardRef,
   title,
   period,
-  subtitle,
   location,
   photos,
   shape,
@@ -304,9 +303,9 @@ export default function CardPreview({
               {title || 'Événement'}
             </h2>
 
-            {(period || subtitle) && (
+            {period && (
               <p style={{ fontSize: compact ? '9px' : '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: compact ? '0' : '0.5px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {period || ''}{period && subtitle ? ' • ' : ''}{subtitle || ''}
+                {period}
               </p>
             )}
           </div>
@@ -661,9 +660,9 @@ export default function CardPreview({
           >
             {title || 'Événement'}
           </Text>
-          {(period || subtitle) && (
+          {period && (
             <Text numberOfLines={compact ? 1 : undefined} style={[styles.subtitle, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.textColor }]}>
-              {period || ''}{period && subtitle ? ' • ' : ''}{subtitle || ''}
+              {period}
             </Text>
           )}
         </View>
@@ -848,7 +847,6 @@ const styles = StyleSheet.create({
   badge: { maxWidth: '100%', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 15, marginBottom: 14 },
   badgeText: { flexShrink: 1, textAlign: 'center', fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase' },
   title: { fontSize: 25, textAlign: 'center', marginBottom: 8 },
-  subtitle: { fontSize: 13, fontWeight: '500', fontStyle: 'italic', textAlign: 'center', opacity: 0.8, letterSpacing: 0.5 },
   gallery: { minHeight: 160, alignItems: 'center', justifyContent: 'center' },
   emptyPlaceholder: {
     width: '100%',
