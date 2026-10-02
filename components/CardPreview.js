@@ -278,7 +278,7 @@ export default function CardPreview({
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: compact ? '16px' : `${currentTheme.titleSize || 23}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <h2 style={{ fontSize: compact ? '16px' : `${currentTheme.titleSize || 21}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {title || 'Événement'}
             </h2>
 
@@ -583,7 +583,7 @@ export default function CardPreview({
             </View>
           ) : null}
           <Text
-            numberOfLines={compact ? 1 : undefined}
+            numberOfLines={1}
             style={[
               styles.title,
               compact && { fontSize: 16, marginBottom: 2, letterSpacing: 0 },
@@ -591,7 +591,7 @@ export default function CardPreview({
                 color: currentTheme.textColor,
                 fontFamily: nativeFontFamily,
                 fontWeight: currentTheme.fontWeight,
-                fontSize: compact ? 16 : (currentTheme.titleSize || 23),
+                fontSize: compact ? 16 : (currentTheme.titleSize || 21),
                 letterSpacing: currentTheme.letterSpacing,
               },
             ]}

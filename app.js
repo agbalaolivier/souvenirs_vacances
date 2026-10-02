@@ -205,6 +205,30 @@ export default function App() {
     }
   };
 
+  const takePhotoMobile = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission refusée', 'Autorise la caméra pour prendre une photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions
+        ? ImagePicker.MediaTypeOptions.Images
+        : ['images'],
+      allowsEditing: false,
+      quality: 0.9,
+      cameraType: 'back',
+    });
+
+    if (!result.canceled) {
+      setPhotos((prev) => [...prev, ...result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type || 'image/jpeg',
+      }))]);
+    }
+  };
+
   const handleWebFileChange = (event) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
@@ -535,6 +559,7 @@ export default function App() {
         onThemeChange={handleThemeChange}
         onShapeChange={setShape}
         onPickImages={pickImagesMobile}
+        onTakePhoto={takePhotoMobile}
         onWebMediaChange={handleWebFileChange}
         onAudioFileChange={handleAudioFileChange}
         onToggleRecording={toggleRecording}

@@ -48,6 +48,7 @@ export default function MobileEditor({
   onThemeChange,
   onShapeChange,
   onPickImages,
+  onTakePhoto,
   onWebMediaChange,
   onAudioFileChange,
   onToggleRecording,
@@ -155,12 +156,22 @@ export default function MobileEditor({
             <View style={styles.sheetBody}>
               {Platform.OS === 'web' ? (
                 <label style={styles.primaryAction}>
-                  <span>＋ Ajouter des photos</span>
+                  <span>📷 Prendre une photo</span>
+                  <input type="file" accept="image/*" capture="environment" onChange={onWebMediaChange} style={{ display: 'none' }} />
+                </label>
+              ) : (
+                <TouchableOpacity style={styles.primaryAction} onPress={onTakePhoto}>
+                  <Text style={styles.primaryActionText}>📷 Prendre une photo</Text>
+                </TouchableOpacity>
+              )}
+              {Platform.OS === 'web' ? (
+                <label style={styles.primaryAction}>
+                  <span>＋ Ajouter depuis la galerie</span>
                   <input type="file" accept="image/*,video/*" multiple onChange={onWebMediaChange} style={{ display: 'none' }} />
                 </label>
               ) : (
                 <TouchableOpacity style={styles.primaryAction} onPress={onPickImages}>
-                  <Text style={styles.primaryActionText}>＋ Ajouter des photos</Text>
+                  <Text style={styles.primaryActionText}>＋ Ajouter depuis la galerie</Text>
                 </TouchableOpacity>
               )}
               <Text style={styles.helperText}>Les photos apparaissent directement dans ton collage.</Text>
