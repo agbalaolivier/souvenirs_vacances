@@ -195,7 +195,7 @@ export default function CardPreview({
   const currentTheme = themesConfig[theme] || themesConfig.tropical;
   const nativeFontFamily = Platform.select({ ios: currentTheme.font.ios, android: currentTheme.font.android, default: currentTheme.font.android });
   const titleLength = (title || 'Événement').length;
-  const fittedTitleSize = currentTheme.titleSize || (titleLength > 28 ? 18 : titleLength > 22 ? 20 : 21);
+  const fittedTitleSize = Math.max(14, Math.min(currentTheme.titleSize || 21, Math.floor(480 / Math.max(titleLength, 1))));
 
   // Gestion de la navigation Lightbox (partagée web + mobile)
   const handlePrev = (e) => {
