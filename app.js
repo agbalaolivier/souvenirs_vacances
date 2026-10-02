@@ -49,6 +49,7 @@ function formatDateAndSeason(date) {
 
 const SHAPES_OPTIONS = [
   { id: 'shape-square', label: 'Carré Arrondi', icon: '🔲' },
+  { id: 'shape-original', label: 'Original', icon: '📷' },
   { id: 'shape-portrait', label: 'Portrait', icon: '▯' },
   { id: 'shape-landscape', label: 'Paysage', icon: '▭' },
   { id: 'shape-heart', label: 'Cœur', icon: '❤️' },
@@ -71,6 +72,7 @@ const THEMES_OPTIONS = [
   { id: 'noel', label: 'Fêtes & Noël', color: '#9f1239' },
   { id: 'romantique', label: 'Romantique', color: '#db2777' },
   { id: 'chic', label: 'Chic Minimaliste', color: '#52525b' },
+  { id: 'libre', label: 'Libre', color: '#1d9bf0' },
   { id: 'anniversaire', label: 'Anniversaire & Fête', color: '#a21caf' },
   { id: 'automne', label: 'Automne Doré', color: '#b45309' },
   { id: 'printemps', label: 'Printemps Frais', color: '#10b981' },
@@ -130,6 +132,8 @@ export default function App() {
   const [isDateModalVisible, setIsDateModalVisible] = useState(false);
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState('');
 
   const [audioUri, setAudioUri] = useState(null);
   const [audioName, setAudioName] = useState('');
@@ -405,12 +409,18 @@ export default function App() {
     }
 
     setIsExporting(true);
+    setExportProgress(8);
+    setExportStatus('Préparation de la carte...');
     try {
       await new Promise((resolve) => setTimeout(resolve, 50));
+      setExportProgress(20);
+      setExportStatus('Capture de la carte...');
       const imageUri = await captureRef(cardRef, { format: 'jpg', quality: 0.95 });
       const formData = new FormData();
 
       if (Platform.OS === 'web') {
+        setExportProgress(32);
+        setExportStatus('Préparation de l’image...');
         const imageBlob = await normalizeWebImage(imageUri);
         const audioBlob = await fetch(audioUri).then((response) => response.blob());
         const imageExtension = imageBlob.type.includes('png') ? 'png' : 'jpg';
@@ -423,6 +433,8 @@ export default function App() {
         formData.append('audio', new File(audioUri));
       }
 
+      setExportProgress(45);
+      setExportStatus('Envoi vers le convertisseur vidéo...');
       const request = Platform.OS === 'web' ? fetch : expoFetch;
       const response = await request(`${VIDEO_API_URL}/convert`, {
         method: 'POST',
@@ -433,6 +445,8 @@ export default function App() {
         throw new Error(await response.text());
       }
 
+      setExportProgress(82);
+      setExportStatus('Conversion MP4 en cours...');
       if (Platform.OS === 'web') {
         const videoBlob = await response.blob();
         const videoUrl = URL.createObjectURL(videoBlob);
@@ -451,12 +465,23 @@ export default function App() {
           dialogTitle: 'Partager ma vidéo souvenir',
         });
       }
+      setExportProgress(100);
+      setExportStatus('Vidéo MP4 prête');
     } catch (e) {
       const details = e?.message ? `\n\n${e.message}` : '';
       Alert.alert('Erreur Export Vidéo', `Impossible de générer le fichier vidéo.${details}`);
     } finally {
-      setIsExporting(false);
+      setTimeout(() => {
+        setIsExporting(false);
+        setExportProgress(0);
+        setExportStatus('');
+      }, 700);
     }
+  };
+
+  const handleThemeChange = (nextTheme) => {
+    setTheme(nextTheme);
+    if (nextTheme === 'libre') setShape('shape-original');
   };
 
   const selectedShapeObj = SHAPES_OPTIONS.find((s) => s.id === shape);
@@ -500,12 +525,14 @@ export default function App() {
         isRecording={isRecording}
         isPlayingAudio={isPlayingAudio}
         isExporting={isExporting}
+        exportProgress={exportProgress}
+        exportStatus={exportStatus}
         isExportModalVisible={isExportModalVisible}
         hasCustomAudio={hasCustomAudio}
         onTitleChange={setTitle}
         onSubtitleChange={setSubtitle}
         onMessageChange={setMessage}
-        onThemeChange={setTheme}
+        onThemeChange={handleThemeChange}
         onShapeChange={setShape}
         onPickImages={pickImagesMobile}
         onWebMediaChange={handleWebFileChange}

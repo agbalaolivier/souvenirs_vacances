@@ -83,6 +83,7 @@ export const SHAPE_DEFS = {
 
   // Carré : géré à part (simple rectangle arrondi, pas de découpe complexe nécessaire)
   'shape-square': { type: 'rect', x: 0, y: 0, width: 100, height: 100, rx: 10 },
+  'shape-original': { type: 'rect', x: 0, y: 0, width: 100, height: 100, rx: 0 },
 };
 
 export default SHAPE_DEFS;

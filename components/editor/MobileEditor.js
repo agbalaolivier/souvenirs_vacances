@@ -38,6 +38,8 @@ export default function MobileEditor({
   isRecording,
   isPlayingAudio,
   isExporting,
+  exportProgress,
+  exportStatus,
   isExportModalVisible,
   hasCustomAudio,
   onTitleChange,
@@ -267,7 +269,11 @@ export default function MobileEditor({
       {isExporting && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#ffffff" />
-          <Text style={styles.loadingText}>Préparation de ta vidéo...</Text>
+          <Text style={styles.loadingText}>{exportStatus || 'Préparation de ta vidéo...'}</Text>
+          <View style={styles.progressTrack}>
+            <View style={[styles.progressFill, { width: `${Math.max(8, exportProgress)}%` }]} />
+          </View>
+          <Text style={styles.progressLabel}>{Math.round(exportProgress)} %</Text>
         </View>
       )}
 
@@ -335,6 +341,9 @@ const styles = StyleSheet.create({
   messageField: { minHeight: 70, textAlignVertical: 'top' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(35, 42, 40, 0.88)', alignItems: 'center', justifyContent: 'center', zIndex: 20 },
   loadingText: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginTop: 14 },
+  progressTrack: { width: '76%', height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.24)', overflow: 'hidden', marginTop: 18 },
+  progressFill: { height: '100%', borderRadius: 4, backgroundColor: '#bce8d8' },
+  progressLabel: { color: '#d7f4e9', fontSize: 12, fontWeight: '800', marginTop: 8 },
   notice: { position: 'absolute', left: 24, right: 24, bottom: 104, minHeight: 44, borderRadius: 14, backgroundColor: '#244f46', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 14, zIndex: 30, shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.16, shadowRadius: 10, elevation: 8 },
   noticeIcon: { color: '#bce8d8', fontSize: 18, fontWeight: '800', marginRight: 8 },
   noticeText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
