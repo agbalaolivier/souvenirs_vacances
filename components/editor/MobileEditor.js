@@ -34,7 +34,9 @@ export default function MobileEditor({
   theme,
   themes,
   audioName,
+  audioKind,
   isRecording,
+  isPlayingAudio,
   isExporting,
   isExportModalVisible,
   hasCustomAudio,
@@ -47,6 +49,7 @@ export default function MobileEditor({
   onWebMediaChange,
   onAudioFileChange,
   onToggleRecording,
+  onToggleAudio,
   onLocation,
   onRemovePhoto,
   onAiProcess,
@@ -78,6 +81,22 @@ export default function MobileEditor({
   const handleLocation = async () => {
     await onLocation();
     notify('Ville ajoutée à la carte');
+  };
+
+  const handleAudioFile = async (event) => {
+    await onAudioFileChange(event);
+    notify('Musique ajoutée');
+  };
+
+  const handleRecording = async () => {
+    const wasRecording = isRecording;
+    await onToggleRecording();
+    notify(wasRecording ? 'Enregistrement ajouté' : 'Enregistrement en cours');
+  };
+
+  const handleAudioPreview = async () => {
+    await onToggleAudio();
+    notify(isPlayingAudio ? 'Lecture arrêtée' : 'Lecture en cours');
   };
 
   const closeSheet = () => setActiveTool(null);
@@ -179,13 +198,23 @@ export default function MobileEditor({
               {Platform.OS === 'web' && (
                 <label style={styles.secondaryAction}>
                   <span>♫ Choisir une musique</span>
-                  <input type="file" accept="audio/*" onChange={onAudioFileChange} style={{ display: 'none' }} />
+                  <input type="file" accept="audio/*" onChange={handleAudioFile} style={{ display: 'none' }} />
                 </label>
               )}
-              <TouchableOpacity style={styles.secondaryAction} onPress={onToggleRecording}>
+              <TouchableOpacity style={styles.secondaryAction} onPress={handleRecording}>
                 <Text style={styles.secondaryActionText}>{isRecording ? '■ Arrêter l’enregistrement' : '● Enregistrer un message'}</Text>
               </TouchableOpacity>
-              {audioName ? <Text style={styles.helperText}>Piste: {audioName}</Text> : <Text style={styles.helperText}>Ajoute une musique pour créer une vidéo MP4.</Text>}
+              {audioName ? (
+                <View style={styles.audioStatus}>
+                  <View style={styles.audioStatusDot} />
+                  <Text style={styles.audioStatusText}>{audioKind === 'voice' ? 'Message vocal' : 'Musique MP3'}: {audioName}</Text>
+                </View>
+              ) : <Text style={styles.helperText}>Ajoute une musique ou enregistre un message pour créer une vidéo MP4.</Text>}
+              {audioName && (
+                <TouchableOpacity style={styles.previewAudioAction} onPress={handleAudioPreview}>
+                  <Text style={styles.previewAudioText}>{isPlayingAudio ? '■ Arrêter l’écoute' : '▶ Écouter avant export'}</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
           {activeTool === 'more' && (
@@ -214,7 +243,10 @@ export default function MobileEditor({
         <View style={styles.modalBackdrop}>
           <View style={styles.exportSheet}>
             <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Partager ta création</Text>
+              <View>
+                <Text style={styles.sheetTitle}>Partager ta création</Text>
+                <Text style={styles.exportTitle}>{title || 'Ma carte'}</Text>
+              </View>
               <TouchableOpacity onPress={onCloseExport} accessibilityLabel="Fermer le partage">
                 <Text style={styles.closeIcon}>×</Text>
               </TouchableOpacity>
@@ -281,6 +313,12 @@ const styles = StyleSheet.create({
   secondaryAction: { backgroundColor: '#edf2ef', borderRadius: 13, padding: 14, alignItems: 'center', justifyContent: 'center', color: '#2f6258', fontSize: 14, fontWeight: '800', textAlign: 'center' },
   secondaryActionText: { color: '#2f6258', fontSize: 14, fontWeight: '800' },
   helperText: { color: '#817c75', fontSize: 12, lineHeight: 17, textAlign: 'center' },
+  audioStatus: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 3 },
+  audioStatusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3c9a78', marginRight: 7 },
+  audioStatusText: { color: '#356b60', fontSize: 12, fontWeight: '700', flexShrink: 1, textAlign: 'center' },
+  previewAudioAction: { backgroundColor: '#f4f0e8', borderRadius: 12, padding: 12, alignItems: 'center' },
+  previewAudioText: { color: '#806545', fontSize: 13, fontWeight: '800' },
+  exportTitle: { color: '#77736e', fontSize: 12, marginTop: 3 },
   themeRow: { gap: 10, paddingBottom: 4 },
   stylePanel: { gap: 8, paddingBottom: 4 },
   optionTitle: { color: '#77736e', fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },

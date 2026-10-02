@@ -133,6 +133,8 @@ export default function App() {
 
   const [audioUri, setAudioUri] = useState(null);
   const [audioName, setAudioName] = useState('');
+  const [audioKind, setAudioKind] = useState('');
+  const [audioMimeType, setAudioMimeType] = useState('audio/mpeg');
   const [hasCustomAudio, setHasCustomAudio] = useState(false);
   const [sound, setSound] = useState(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -226,6 +228,8 @@ export default function App() {
       const fileUri = URL.createObjectURL(file);
       setAudioUri(fileUri);
       setAudioName(file.name);
+      setAudioKind('music');
+      setAudioMimeType(file.type || 'audio/mpeg');
       setHasCustomAudio(true);
 
       if (sound) {
@@ -254,6 +258,8 @@ export default function App() {
         const uri = recording.getURI();
         setAudioUri(uri);
         setAudioName('Mon_message_vocal.wav');
+        setAudioKind('voice');
+        setAudioMimeType('audio/wav');
         setHasCustomAudio(true);
 
         const { sound: newSound } = await Audio.Sound.createAsync({ uri });
@@ -373,6 +379,23 @@ export default function App() {
     }
   };
 
+  const normalizeWebImage = (uri) => new Promise((resolve, reject) => {
+    const image = new window.Image();
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = image.naturalWidth || image.width;
+      canvas.height = image.naturalHeight || image.height;
+      const context = canvas.getContext('2d');
+      context.drawImage(image, 0, 0);
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error('La capture de la carte est vide.'));
+      }, 'image/jpeg', 0.95);
+    };
+    image.onerror = () => reject(new Error('La capture de la carte est illisible.'));
+    image.src = uri;
+  });
+
   const exportAsMP4 = async () => {
     setIsExportModalVisible(false);
 
@@ -388,10 +411,11 @@ export default function App() {
       const formData = new FormData();
 
       if (Platform.OS === 'web') {
-        const imageBlob = await fetch(imageUri).then((response) => response.blob());
+        const imageBlob = await normalizeWebImage(imageUri);
         const audioBlob = await fetch(audioUri).then((response) => response.blob());
         const imageExtension = imageBlob.type.includes('png') ? 'png' : 'jpg';
-        const audioExtension = audioBlob.type.includes('wav') ? 'wav' : audioBlob.type.includes('mp4') ? 'm4a' : 'mp3';
+        const audioType = audioBlob.type || audioMimeType;
+        const audioExtension = audioType.includes('wav') ? 'wav' : audioType.includes('mp4') ? 'm4a' : 'mp3';
         formData.append('image', imageBlob, `carte.${imageExtension}`);
         formData.append('audio', audioBlob, `ambiance.${audioExtension}`);
       } else {
@@ -472,7 +496,9 @@ export default function App() {
         theme={theme}
         themes={THEMES_OPTIONS}
         audioName={audioName}
+        audioKind={audioKind}
         isRecording={isRecording}
+        isPlayingAudio={isPlayingAudio}
         isExporting={isExporting}
         isExportModalVisible={isExportModalVisible}
         hasCustomAudio={hasCustomAudio}
@@ -485,6 +511,7 @@ export default function App() {
         onWebMediaChange={handleWebFileChange}
         onAudioFileChange={handleAudioFileChange}
         onToggleRecording={toggleRecording}
+        onToggleAudio={toggleAudio}
         onLocation={fetchLocation}
         onRemovePhoto={removePhoto}
         onAiProcess={handleAiProcess}
