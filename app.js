@@ -458,10 +458,20 @@ export default function App() {
       }
 
       setExportProgress(45);
-      setExportStatus('Envoi vers le convertisseur vidéo...');
       const request = Platform.OS === 'web' ? fetch : expoFetch;
+      setExportStatus('Réveil du serveur vidéo...');
+      const wakeController = new AbortController();
+      const wakeTimeoutId = setTimeout(() => wakeController.abort(), 60000);
+      const healthResponse = await request(`${VIDEO_API_URL}/health`, { signal: wakeController.signal });
+      clearTimeout(wakeTimeoutId);
+      if (!healthResponse.ok) {
+        throw new Error(`Le serveur vidéo est indisponible (${healthResponse.status}).`);
+      }
+
+      setExportProgress(52);
+      setExportStatus('Envoi vers le convertisseur vidéo...');
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 100000);
+      const timeoutId = setTimeout(() => controller.abort(), 180000);
       let response;
 
       try {
