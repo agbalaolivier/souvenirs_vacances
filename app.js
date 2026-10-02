@@ -27,6 +27,13 @@ import MobileEditor from './components/editor/MobileEditor';
 
 const VIDEO_API_URL = 'https://souvenirs-vacances.onrender.com';
 
+function warmUpVideoServer() {
+  const request = Platform.OS === 'web' ? fetch : expoFetch;
+  request(VIDEO_API_URL).catch(() => {
+    // Le préchauffage est volontairement silencieux.
+  });
+}
+
 function formatDateAndSeason(date) {
   const dateLabel = new Intl.DateTimeFormat('fr-FR', {
     day: 'numeric',
@@ -164,6 +171,10 @@ export default function App() {
   const cardRef = useRef();
   const { width, height } = useWindowDimensions();
   const isLargeScreen = width >= 900;
+
+  React.useEffect(() => {
+    warmUpVideoServer();
+  }, []);
 
   const monthStart = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
   const daysInCalendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0).getDate();
@@ -484,9 +495,9 @@ export default function App() {
       }
 
       setExportProgress(52);
-      setExportStatus('Envoi vers le convertisseur vidéo...');
+      setExportStatus('Connexion au serveur (cela peut prendre 1 à 2 min s’il était en veille)...');
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 180000);
+      const timeoutId = setTimeout(() => controller.abort(), 170000);
       let response;
 
       try {
@@ -633,7 +644,7 @@ export default function App() {
         onLocation={fetchLocation}
         onRemovePhoto={removePhoto}
         onAiProcess={handleAiProcess}
-        onOpenExport={() => setIsExportModalVisible(true)}
+        onOpenExport={() => { warmUpVideoServer(); setIsExportModalVisible(true); }}
         onCloseExport={() => setIsExportModalVisible(false)}
         onDownloadJPG={downloadImageJPG}
         onExportMP4={exportAsMP4}
@@ -794,7 +805,7 @@ export default function App() {
             <View style={styles.exportActions}>
               <TouchableOpacity
                 style={styles.btnDownload}
-                onPress={() => setIsExportModalVisible(true)}
+                onPress={() => { warmUpVideoServer(); setIsExportModalVisible(true); }}
               >
                 <Text style={styles.btnExportText}> Enregistrer / Partager la Carte ▾</Text>
               </TouchableOpacity>
