@@ -286,9 +286,11 @@ export default function CardPreview({
               {title || 'Événement'}
             </h2>
 
-            <p style={{ fontSize: compact ? '9px' : '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: compact ? '0' : '0.5px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {period ? `${period} • ` : ''}{subtitle || 'Moments partagés'}
-            </p>
+            {(period || subtitle) && (
+              <p style={{ fontSize: compact ? '9px' : '13px', fontWeight: '500', color: currentTheme.textColor, opacity: 0.8, margin: 0, fontStyle: 'italic', letterSpacing: compact ? '0' : '0.5px', whiteSpace: compact ? 'nowrap' : 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {period || ''}{period && subtitle ? ' • ' : ''}{subtitle || ''}
+              </p>
+            )}
           </div>
 
           {/* Galerie Photos / Vidéos */}
@@ -611,9 +613,11 @@ export default function CardPreview({
           >
             {title || 'Événement'}
           </Text>
-          <Text numberOfLines={compact ? 1 : undefined} style={[styles.subtitle, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.textColor }]}>
-            {period ? `${period} • ` : ''}{subtitle || 'Moments partagés'}
-          </Text>
+          {(period || subtitle) && (
+            <Text numberOfLines={compact ? 1 : undefined} style={[styles.subtitle, compact && { fontSize: 9, letterSpacing: 0 }, { color: currentTheme.textColor }]}>
+              {period || ''}{period && subtitle ? ' • ' : ''}{subtitle || ''}
+            </Text>
+          )}
         </View>
 
         {/* Galerie Photos / Vidéos */}

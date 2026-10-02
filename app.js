@@ -90,7 +90,7 @@ export default function App() {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1);
   });
-  const [subtitle, setSubtitle] = useState('Des moments inoubliables partagés avec vous');
+  const [subtitle, setSubtitle] = useState('');
   const [message, setMessage] = useState('Plein de bonheur et de soleil !');
   const [location, setLocation] = useState('Paradis Tropical');
   const [photos, setPhotos] = useState([]);
