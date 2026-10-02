@@ -460,19 +460,49 @@ export default function App() {
       setExportProgress(45);
       setExportStatus('Envoi vers le convertisseur vidéo...');
       const request = Platform.OS === 'web' ? fetch : expoFetch;
-      const response = await request(`${VIDEO_API_URL}/convert`, {
-        method: 'POST',
-        body: formData,
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 100000);
+      let response;
+
+      try {
+        response = await request(`${VIDEO_API_URL}/convert`, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+      } catch (networkErr) {
+        clearTimeout(timeoutId);
+        console.error('[exportAsMP4] Échec réseau avant toute réponse du serveur :', networkErr);
+        const isAbort = networkErr?.name === 'AbortError';
+        throw new Error(
+          isAbort
+            ? "Le serveur de conversion n'a pas répondu à temps (il est peut-être en veille — réessayez dans une minute)."
+            : "Impossible de joindre le serveur de conversion (réseau ou CORS). Vérifiez la console réseau du navigateur."
+        );
+      }
+      clearTimeout(timeoutId);
+
+      console.log('[exportAsMP4] Statut HTTP reçu :', response.status, response.statusText);
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        let bodyText = '';
+        try {
+          bodyText = await response.text();
+        } catch {
+          bodyText = '(corps de réponse illisible)';
+        }
+        console.error('[exportAsMP4] Réponse d’erreur du serveur :', response.status, bodyText);
+        throw new Error(`Le serveur a répondu avec une erreur ${response.status}.${bodyText ? `\n${bodyText.slice(0, 300)}` : ''}`);
       }
 
       setExportProgress(82);
       setExportStatus('Conversion MP4 en cours...');
       if (Platform.OS === 'web') {
         const videoBlob = await response.blob();
+        console.log('[exportAsMP4] Blob vidéo reçu, taille :', videoBlob.size, 'type :', videoBlob.type);
+        if (!videoBlob.size) {
+          throw new Error('Le serveur a renvoyé une vidéo vide.');
+        }
         const videoUrl = URL.createObjectURL(videoBlob);
         const link = document.createElement('a');
         link.download = 'carte-souvenir.mp4';
@@ -492,6 +522,7 @@ export default function App() {
       setExportProgress(100);
       setExportStatus('Vidéo MP4 prête');
     } catch (e) {
+      console.error('[exportAsMP4] Erreur finale :', e);
       const details = e?.message ? `\n\n${e.message}` : '';
       Alert.alert('Erreur Export Vidéo', `Impossible de générer le fichier vidéo.${details}`);
     } finally {
