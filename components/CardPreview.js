@@ -194,6 +194,8 @@ export default function CardPreview({
 
   const currentTheme = themesConfig[theme] || themesConfig.tropical;
   const nativeFontFamily = Platform.select({ ios: currentTheme.font.ios, android: currentTheme.font.android, default: currentTheme.font.android });
+  const titleLength = (title || 'Événement').length;
+  const fittedTitleSize = currentTheme.titleSize || (titleLength > 28 ? 18 : titleLength > 22 ? 20 : 21);
 
   // Gestion de la navigation Lightbox (partagée web + mobile)
   const handlePrev = (e) => {
@@ -280,7 +282,7 @@ export default function CardPreview({
               </div>
             ) : null}
 
-            <h2 style={{ fontSize: compact ? '16px' : `${currentTheme.titleSize || 21}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <h2 style={{ fontSize: compact ? '16px' : `${fittedTitleSize}px`, fontWeight: currentTheme.fontWeight, fontFamily: currentTheme.font.web, color: currentTheme.textColor, margin: compact ? '0 0 2px 0' : '0 0 8px 0', letterSpacing: compact ? '0' : `${currentTheme.letterSpacing}px`, whiteSpace: 'nowrap', overflow: 'visible' }}>
               {title || 'Événement'}
             </h2>
 
@@ -593,6 +595,8 @@ export default function CardPreview({
           ) : null}
           <Text
             numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
             style={[
               styles.title,
               compact && { fontSize: 16, marginBottom: 2, letterSpacing: 0 },
@@ -600,7 +604,7 @@ export default function CardPreview({
                 color: currentTheme.textColor,
                 fontFamily: nativeFontFamily,
                 fontWeight: currentTheme.fontWeight,
-                fontSize: compact ? 16 : (currentTheme.titleSize || 21),
+                fontSize: compact ? 16 : fittedTitleSize,
                 letterSpacing: currentTheme.letterSpacing,
               },
             ]}
